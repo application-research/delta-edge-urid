@@ -22,7 +22,6 @@ SPLIT_SIZE=5048576000
 curl --location --request POST 'http://localhost:1313/api/v1/content/add' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY] \
 --form 'data=@"./random_'${ms}'.dat"'
---form 'tag_name=unsealed'
 {"status":"success","message":"File uploaded and pinned successfully. Please take note of the ids.","contents":[{"ID":137,"name":"random_1687284235N.dat","size":500000,"cid":"bafybeih4zdw6qsevg5n7qwujoxymycoj6lk7xhi2l2wxqmtcw5gutmubj4","delta_content_id":0,"delta_node_url":"http://localhost:1414","bucket_uuid":"d2615178-0f94-11ee-b379-9e0bf0c70138","status":"pinned","piece_cid":"","piece_size":0,"inclusion_proof":"","last_message":"","miner":"","make_deal":true,"created_at":"2023-06-20T14:03:55.816414-04:00","updated_at":"2023-06-20T14:03:55.816414-04:00"}]}
 ```
 

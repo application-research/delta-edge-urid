@@ -11,25 +11,29 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"time"
 )
 
-func OpenDatabase(cfg config.DeltaConfig) (*gorm.DB, error) {
+func OpenDatabase(cfg config.EdgeConfig) (*gorm.DB, error) {
 
 	// use postgres
 	var DB *gorm.DB
 	var err error
 
 	if cfg.Node.DbDsn[:8] == "postgres" {
-		DB, err = gorm.Open(postgres.Open(cfg.Node.DbDsn), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Silent),
-		})
+		DB, err = gorm.Open(postgres.Open(cfg.Node.DbDsn), &gorm.Config{})
 	} else {
-		DB, err = gorm.Open(sqlite.Open(cfg.Node.DbDsn), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Silent),
-		})
+		DB, err = gorm.Open(sqlite.Open(cfg.Node.DbDsn), &gorm.Config{})
 	}
+
+	sqldb, err := DB.DB()
+	if err != nil {
+		return nil, err
+	}
+	sqldb.SetMaxIdleConns(250)
+	sqldb.SetMaxOpenConns(250)
+	sqldb.SetConnMaxIdleTime(time.Hour)
+	sqldb.SetConnMaxLifetime(time.Hour)
 
 	// generate new models.
 	ConfigureModels(DB) // create models.
@@ -41,7 +45,7 @@ func OpenDatabase(cfg config.DeltaConfig) (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	db.AutoMigrate(&Content{}, &ContentDeal{}, &Collection{}, &CollectionRef{}, &LogEvent{}, &CarBucket{})
+	db.AutoMigrate(&Content{}, &ContentDeal{}, &LogEvent{}, &Bucket{}, &Policy{}, &ContentSignatureMeta{})
 }
 
 type LogEvent struct {
@@ -57,34 +61,73 @@ type LogEvent struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
-type CarBucket struct {
-	ID          int64     `gorm:"primaryKey"`
-	Uuid        string    `gorm:"index" json:"uuid"`
-	Name        string    `json:"name"`
-	Miner       string    `json:"miner"`
-	Cid         string    `json:"cid"`
-	Status      string    `json:"status"` // open, completed
-	LastMessage string    `json:"last_message"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+type Policy struct {
+	gorm.Model
+	ID         int64     `gorm:"primaryKey"`
+	Name       string    `json:"name"`
+	BucketSize int64     `json:"bucket_size"`
+	SplitSize  int64     `json:"split_size"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-//	 main content record
+type Bucket struct {
+	gorm.Model
+	ID               int64     `gorm:"primaryKey"`
+	Uuid             string    `gorm:"index" json:"uuid"`
+	Name             string    `json:"name"`
+	Size             int64     `json:"size"`
+	RequestingApiKey string    `json:"requesting_api_key,omitempty"`
+	Miner            string    `json:"miner"`
+	PieceCid         string    `json:"piece_cid"`
+	PieceSize        int64     `json:"piece_size"`
+	DirCid           string    `json:"dir_cid"`
+	Cid              string    `json:"cid"`
+	Status           string    `json:"status"`
+	PolicyId         int64     `json:"policy_id"`
+	LastMessage      string    `json:"last_message"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
+}
+
+type ContentSignatureMeta struct {
+	ID                  int64     `gorm:"primaryKey"`
+	ContentId           int64     `json:"content_id"`
+	Signature           string    `json:"signature"`
+	CurrentTimestamp    time.Time `json:"current_timestamp"`
+	ExpirationTimestamp time.Time `json:"expiration_timestamp"`
+	SignedUrl           string    `json:"signed_url"`
+	Message             string    `json:"message"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
+}
+
+// main content record
 type Content struct {
+	gorm.Model
 	ID               int64     `gorm:"primaryKey"`
 	Name             string    `json:"name"`
 	Size             int64     `json:"size"`
 	Cid              string    `json:"cid"`
 	RequestingApiKey string    `json:"requesting_api_key,omitempty"`
-	DeltaContentId   int64     `json:"delta_content_id"`
-	DeltaNodeUrl     string    `json:"delta_node_url"`
-	CarBucket        int64     `json:"car_bucket"`
+	BucketUuid       string    `json:"bucket_uuid"`
 	Status           string    `json:"status"`
+	PieceCid         string    `json:"piece_cid"`
+	PieceSize        int64     `json:"piece_size"`
 	LastMessage      string    `json:"last_message"`
 	Miner            string    `json:"miner"`
 	MakeDeal         bool      `json:"make_deal"`
+	TagName          string    `json:"tag_name"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
+}
+
+type ContentTag struct {
+	ID        int64     `gorm:"primaryKey"`
+	ContentId int64     `json:"content_id"`
+	TagId     int64     `json:"tag_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Collection struct {

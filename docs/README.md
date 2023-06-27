@@ -1,4 +1,4 @@
-# Edge UR (Upload and Retrieve) Service
+# Edge UR (Upload and Retrieve) for Import Deals (edge-urid)
 
 Dedicated light node to upload and retrieve their CIDs. To do this, we decoupled the upload and retrieval aspect from the Estuary API node so we can create a node that can live on the "edge" closer to the customer.
 

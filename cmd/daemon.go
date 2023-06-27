@@ -6,15 +6,13 @@ import (
 	"github.com/application-research/edge-ur/api"
 	"github.com/application-research/edge-ur/config"
 	"github.com/application-research/edge-ur/core"
-	"github.com/application-research/edge-ur/jobs"
 	"github.com/application-research/edge-ur/utils"
 	"github.com/urfave/cli/v2"
 	"runtime"
 	"strconv"
-	"time"
 )
 
-func DaemonCmd(cfg *config.DeltaConfig) []*cli.Command {
+func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 	// add a command to run API node
 	var daemonCommands []*cli.Command
 
@@ -48,6 +46,8 @@ func DaemonCmd(cfg *config.DeltaConfig) []*cli.Command {
 			port := c.String("port")
 			if repo == "" {
 				repo = cfg.Node.Repo
+			} else {
+				cfg.Node.Repo = repo
 			}
 			if port != "" {
 				portInt, err := strconv.Atoi(port)
@@ -78,6 +78,9 @@ func DaemonCmd(cfg *config.DeltaConfig) []*cli.Command {
    \ \_______\\ \_______\\ \_______\\ \_______\                \ \_______\\ \__\\ _\ 
     \|_______| \|_______| \|_______| \|_______|                 \|_______| \|__|\|__|
 `)
+
+			// default tagging.
+			api.GetDefaultTagPolicy(ln)
 			fmt.Println("Starting API server")
 			api.InitializeEchoRouterConfig(ln)
 			api.LoopForever()
@@ -91,27 +94,4 @@ func DaemonCmd(cfg *config.DeltaConfig) []*cli.Command {
 
 	return daemonCommands
 
-}
-
-func runProcessors(ln *core.LightNode) {
-	dealCheckFreq := ln.Config.Delta.DealCheck
-	dealCheckFreqTick := time.NewTicker(time.Duration(dealCheckFreq) * time.Second)
-
-	for {
-		select {
-		case <-dealCheckFreqTick.C:
-			go func() {
-				dealCheck := jobs.NewDealChecker(ln)
-				d := jobs.CreateNewDispatcher() // dispatch jobs
-				d.AddJob(dealCheck)
-				d.Start(1)
-
-				for {
-					if d.Finished() {
-						break
-					}
-				}
-			}()
-		}
-	}
 }

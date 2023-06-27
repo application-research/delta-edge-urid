@@ -124,9 +124,9 @@ type DealE2EUploadResponse struct {
 	} `json:"replicated_contents"`
 }
 
-func NewUploadToEstuaryProcessor(ln *core.LightNode, contentToProcess core.Content, fileNode io.Reader) IProcessor {
+func NewUploadToDeltaProcessor(ln *core.LightNode, contentToProcess core.Content, fileNode io.Reader) IProcessor {
 	DELTA_UPLOAD_API = ln.Config.Delta.ApiUrl
-	REPLICATION_FACTOR = string(ln.Config.Delta.ReplicationFactor)
+	REPLICATION_FACTOR = string(ln.Config.Common.ReplicationFactor)
 	return &UploadToDeltaProcessor{
 		contentToProcess,
 		fileNode,
@@ -144,7 +144,6 @@ func (r *UploadToDeltaProcessor) Run() error {
 
 	// if network connection is not available or delta node is not available, then we need to skip and
 	// let the upload retry consolidate the content until it is available
-	// check if there are open bucket. if there are, generate a car for them,
 
 	maxRetries := 5
 	retryInterval := 5 * time.Second
@@ -167,7 +166,7 @@ func (r *UploadToDeltaProcessor) Run() error {
 		fmt.Println("CreateFormField error: ", err)
 		return nil
 	}
-	repFactor := r.LightNode.Config.Delta.ReplicationFactor
+	repFactor := r.LightNode.Config.Common.ReplicationFactor
 	partMetadata := fmt.Sprintf(`{"auto_retry":true,"miner":"%s","replication":%d}`, r.Content.Miner, repFactor)
 
 	fmt.Println("partMetadata: ", partMetadata)
@@ -218,7 +217,7 @@ func (r *UploadToDeltaProcessor) Run() error {
 					} else {
 						r.Content.UpdatedAt = time.Now()
 						r.Content.Status = utils.STATUS_UPLOADED_TO_DELTA
-						r.Content.DeltaContentId = int64(dealE2EUploadResponse.ContentID)
+						//r.Content.DeltaContentId = int64(dealE2EUploadResponse.ContentID)
 						r.LightNode.DB.Save(&r.Content)
 
 						// insert each replicated content into the database
@@ -231,11 +230,11 @@ func (r *UploadToDeltaProcessor) Run() error {
 							replicatedContentModel.Size = r.Content.Size
 							replicatedContentModel.Status = replicatedContent.Status
 							replicatedContentModel.LastMessage = replicatedContent.Message
-							replicatedContentModel.DeltaNodeUrl = DELTA_UPLOAD_API
+							//replicatedContentModel.DeltaNodeUrl = DELTA_UPLOAD_API
 							replicatedContentModel.CreatedAt = time.Now()
 							replicatedContentModel.UpdatedAt = time.Now()
 							replicatedContentModel.RequestingApiKey = r.Content.RequestingApiKey
-							replicatedContentModel.DeltaContentId = int64(replicatedContent.ContentID)
+							//replicatedContentModel.DeltaContentId = int64(replicatedContent.ContentID)
 							r.LightNode.DB.Save(&replicatedContentModel)
 							//}
 						}
