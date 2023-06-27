@@ -24,17 +24,40 @@ type BucketsResponse struct {
 func ConfigureBucketsRouter(e *echo.Group, node *core.LightNode) {
 	//var DeltaUploadApi = node.Config.Delta.ApiUrl
 	buckets := e.Group("/buckets")
-	buckets.GET("/get-open", handleGetOpenBuckets(node))
+	buckets.GET("/get/open", handleGetOpenBuckets(node))
+	buckets.GET("/get/tagged", handleGetTaggedBuckets(node))
 	buckets.POST("/create", handleCreateBucket(node))
 	buckets.DELETE("/:uuid", handleDeleteBucket(node))
 
 }
 
+type CreateBucketRequest struct {
+	Name       string `json:"name"`
+	BucketSize int64  `json:"bucket_size"` // creates the policy
+	SplitSize  int64  `json:"split_size"`  // if its more than 0
+}
+
 func handleCreateBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
+		// authorize
+		authorizationString := c.Request().Header.Get("Authorization")
+		authParts := strings.Split(authorizationString, " ")
+		if authParts[1] != node.Config.Node.AdminApiKey {
+			return c.JSON(401, map[string]interface{}{
+				"message": "Unauthorized",
+			})
+		}
+
 		// get the name
-		tagName := c.FormValue("name")
+		var createBucketRequest CreateBucketRequest
+		err := c.Bind(&createBucketRequest)
+		if err != nil {
+			return c.JSON(400, map[string]interface{}{
+				"message": "Please provide a name for tag/bucket",
+			})
+		}
+		tagName := createBucketRequest.Name
 		if tagName == "" {
 			return c.JSON(400, map[string]interface{}{
 				"message": "Please provide a name for tag/bucket",
@@ -47,15 +70,6 @@ func handleCreateBucket(node *core.LightNode) func(c echo.Context) error {
 		if bucket.ID != 0 {
 			return c.JSON(400, map[string]interface{}{
 				"message": "Tag name already exist",
-			})
-		}
-
-		// authorize
-		authorizationString := c.Request().Header.Get("Authorization")
-		authParts := strings.Split(authorizationString, " ")
-		if authParts[1] != node.Config.Node.AdminApiKey {
-			return c.JSON(401, map[string]interface{}{
-				"message": "Unauthorized",
 			})
 		}
 
@@ -99,6 +113,46 @@ func handleDeleteBucket(node *core.LightNode) func(c echo.Context) error {
 			"message": "Bucket deleted",
 			"bucket":  c.Param("uuid"),
 		})
+	}
+}
+func handleGetTaggedBuckets(node *core.LightNode) func(c echo.Context) error {
+	return func(c echo.Context) error {
+
+		tagName := c.QueryParam("tag_name")
+
+		if tagName == "" {
+			return c.JSON(400, map[string]interface{}{
+				"message": "Please provide a tag name",
+			})
+		}
+
+		var buckets []core.Bucket
+		node.DB.Model(&core.Bucket{}).Where("status = ? and name = ?", "ready-for-deal-making", tagName).Find(&buckets)
+
+		var bucketsResponse []BucketsResponse
+		for _, bucket := range buckets {
+			bucketsResponse = append(bucketsResponse, BucketsResponse{
+				BucketUUID: bucket.Uuid,
+				PieceCid:   bucket.PieceCid,
+				PieceSize:  bucket.PieceSize,
+				PayloadCid: bucket.Cid,
+				DirCid:     bucket.DirCid,
+				//DownloadUrl: "<a href=/gw/" + bucket.Cid + ">" + bucket.PieceCid + "</a>",
+				DownloadUrl: "/gw/" + bucket.Cid,
+				Status:      bucket.Status,
+				Size:        bucket.Size,
+				CreatedAt:   bucket.CreatedAt,
+				UpdatedAt:   bucket.UpdatedAt,
+			})
+		}
+
+		if len(bucketsResponse) == 0 {
+			return c.JSON(404, map[string]interface{}{
+				"message":     "No open buckets found.",
+				"description": "This means that there are no buckets that are ready for deal making.",
+			})
+		}
+		return c.JSON(200, bucketsResponse)
 	}
 }
 func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
