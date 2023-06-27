@@ -27,23 +27,21 @@ func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
 
-		var content core.Content
-		node.DB.Raw("select * from contents as c where requesting_api_key = ? and id = ?", authParts[1], c.Param("id")).Scan(&content)
-		content.RequestingApiKey = ""
+		var contentCids []core.Content
+		node.DB.Raw("select * from contents as c where requesting_api_key = ? and cid = ?", authParts[1], c.Param("cid")).Scan(&contentCids)
 
-		if content.ID == 0 {
+		for _, content := range contentCids {
+			content.RequestingApiKey = ""
+		}
+
+		if len(contentCids) == 0 {
 			return c.JSON(404, map[string]interface{}{
 				"message": "Content not found. Please check if you have the proper API key or if the content id is valid",
 			})
 		}
 
-		// trigger status check
-		job := jobs.CreateNewDispatcher()
-		//job.AddJob(jobs.NewDealItemChecker(node, content))
-		job.Start(1)
-
 		return c.JSON(200, map[string]interface{}{
-			"content": content,
+			"cids": contentCids,
 		})
 	})
 	e.GET("/status/content/:contentId", func(c echo.Context) error {
@@ -60,12 +58,6 @@ func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
 				"message": "Content not found. Please check if you have the proper API key or if the content id is valid",
 			})
 		}
-
-		// trigger status check
-		job := jobs.CreateNewDispatcher()
-		//job.AddJob(jobs.NewDealItemChecker(node, content))
-		job.Start(1)
-
 		return c.JSON(200, map[string]interface{}{
 			"content": content,
 		})
@@ -111,14 +103,7 @@ func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
 				}
 
 			}
-			//job := jobs.CreateNewDispatcher()
-			//job.AddJob(jobs.NewDealItemChecker(node, content))
-
 		}
-		// trigger status check
-		job := jobs.CreateNewDispatcher()
-		//job.AddJob(jobs.NewCarDealItemChecker(node, bucket))
-		job.Start(len(contents) + 1)
 
 		bucket.RequestingApiKey = ""
 		return c.JSON(200, map[string]interface{}{

@@ -196,8 +196,9 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 	return func(c echo.Context) error {
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
-		tagName := c.Param("tag_name")
+		tagName := c.FormValue("tag_name")
 
+		fmt.Println("tag name", tagName)
 		// Check capacity if needed
 		if node.Config.Common.CapacityLimitPerKeyInBytes > 0 {
 			if err := validateCapacityLimit(node, authParts[1]); err != nil {
@@ -293,6 +294,7 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 					RequestingApiKey: authParts[1],
 					//DeltaNodeUrl:     DeltaUploadApi,
 					Uuid: bucketUuid.String(),
+					Size: file.Size,
 					//Miner:            miner, // blank
 					//Tag:       tag,
 					CreatedAt: time.Now(),
