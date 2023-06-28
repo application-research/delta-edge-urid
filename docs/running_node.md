@@ -8,7 +8,7 @@ Edge **REQUIRES** a running delta node to make deals. You can run a delta node l
 
 ### Clone the repo
 ``` 
-git clone https://github.com/application-research/edge-ur
+git clone https://github.com/application-research/edge-urid
 ```
 
 ### build with `go build`
@@ -29,10 +29,6 @@ Copy the `.env.example` file to `.env` and update the values as needed.
 NODE_NAME=edge
 NODE_DESCRIPTION=Edge node
 DB_DSN=edge-urdb
-
-# Service URLs
-AUTH_SVC_API=https://auth.estuary.tech
-DELTA_NODE_API=https://node.delta.store
 ```
 
 ## Running

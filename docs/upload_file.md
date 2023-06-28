@@ -13,63 +13,27 @@ Once you have a node and API key, you can upload a file to the node using the fo
 curl --location 'http://localhost:1313/api/v1/content/add' \
 --header 'Authorization: Bearer [API_KEY]' \
 --form 'data=@"/path/to/file"'
---form 'miners="f0137168,f0717969"' // optional - add a list of miners to pin the file to
---form 'make_deal="false"' // optional - make a deal with the miners. Default is true.
-
+--tag_name='mytag1'
 {
     "status": "success",
-    "message": "File uploaded and pinned successfully to miners. Please take note of the ids.",
+    "message": "File uploaded and pinned successfully. Please take note of the ids.",
     "contents": [
         {
-            "ID": 51,
-            "name": "bafybeicgdjdvwes3e5aaicqljrlv6hpdfsducknrjvsq66d4gsvepolk6y.zip",
-            "size": 1157548,
-            "cid": "bafybeicgdjdvwes3e5aaicqljrlv6hpdfsducknrjvsq66d4gsvepolk6y",
-            "delta_content_id": 0,
-            "delta_node_url": "https://node.delta.store",
+            "CreatedAt": "0001-01-01T00:00:00Z",
+            "UpdatedAt": "0001-01-01T00:00:00Z",
+            "DeletedAt": null,
+            "ID": 21,
+            "name": "https___3038135290-files.gitbook.io_~_files_v0_b_gitbook-x-prod.appspot.com_o_spaces%2F8Ohv82aEc0JVuEXixqN2%2Flogo%2F1ed4UmhvUsIHrDTNYr0v%2FFDT%20Logo_1%404x-8 (1).png",
+            "size": 5114,
+            "cid": "bafybeicxagr5utxtgndszbmfe5i3lxq2bkuzb4fgwyw57zzvaz6gyb5igm",
+            "bucket_uuid": "561be458-1538-11ee-bb54-9e0bf0c70138",
             "status": "pinned",
-            "last_message": "",
-            "miner": "f0137168",
-            "replication": 0,
-            "created_at": "2023-04-22T13:10:34.177515+02:00",
-            "updated_at": "2023-04-22T13:10:34.177515+02:00"
-        },
-        {
-            "ID": 52,
-            "name": "bafybeicgdjdvwes3e5aaicqljrlv6hpdfsducknrjvsq66d4gsvepolk6y.zip",
-            "size": 1157548,
-            "cid": "bafybeicgdjdvwes3e5aaicqljrlv6hpdfsducknrjvsq66d4gsvepolk6y",
-            "delta_content_id": 0,
-            "delta_node_url": "https://node.delta.store",
-            "status": "pinned",
-            "last_message": "",
-            "miner": "f0717969",
-            "replication": 0,
-            "created_at": "2023-04-22T13:10:34.178703+02:00",
-            "updated_at": "2023-04-22T13:10:34.178703+02:00"
+            "make_deal": true,
+            "tag_name": "mytag1",
+            "created_at": "2023-06-27T18:17:00.986323-04:00",
+            "updated_at": "2023-06-27T18:17:00.986324-04:00"
         }
     ]
-}
-```
-
-## Checking the status of the file
-You can check the status of the file using the following command:
-```bash
-curl --location --request GET 'http://localhost:1313/api/v1/status/1' \
---header 'Authorization: Bearer [API_KEY]'
-{
-    "content": {
-        "ID": 1,
-        "name": "aqua-plugin-231.8109.147.zip",
-        "size": 1157548,
-        "cid": "bafybeigt7ba7nrauzln4gjffo2msoigcvsqje4jralw45gf7vvyq6xkrtq",
-        "delta_content_id": 2705,
-        "status": "transfer-finished",
-        "last_message": "transfer-finished",
-        "miner": "f01794610",
-        "created_at": "2023-04-05T09:08:11.839358-04:00",
-        "updated_at": "2023-04-05T09:09:00.105453-04:00"
-    }
 }
 ```
 
