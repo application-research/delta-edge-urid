@@ -8,8 +8,8 @@ import (
 	"github.com/application-research/edge-ur/jobs"
 	"github.com/application-research/edge-ur/utils"
 	"github.com/google/uuid"
-	"github.com/ipfs/boxo/ipld/car"
 	"github.com/ipfs/go-cid"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
 	"strings"
@@ -69,8 +69,9 @@ func ConfigureUploadRouter(e *echo.Group, node *core.LightNode) {
 	var DeltaUploadApi = node.Config.Delta.ApiUrl
 	content := e.Group("/content")
 	content.POST("/add", handleUploadToCarBucketAndMiners(node, DeltaUploadApi))
-	content.POST("/delete/:contentId", handlePinDeleteToNodeToMiners(node, DeltaUploadApi))
-	content.POST("/request-signed-url", handleRequestSignedUrl(node, DeltaUploadApi))
+	content.POST("/add-car", handleUploadToCarBucketAndMiners(node, DeltaUploadApi))
+	//content.POST("/delete/:contentId", handlePinDeleteToNodeToMiners(node, DeltaUploadApi))
+	//content.POST("/request-signed-url", handleRequestSignedUrl(node, DeltaUploadApi))
 
 }
 

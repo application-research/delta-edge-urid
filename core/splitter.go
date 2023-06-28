@@ -4,7 +4,7 @@ package core
 import (
 	"context"
 	"fmt"
-	"github.com/ipfs/boxo/ipld/merkledag"
+	"github.com/ipfs/go-merkledag"
 	"io"
 	"os"
 )
@@ -92,6 +92,7 @@ func (c FileSplitter) SplitFile(filePath string) ([][]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error opening file: %v", err)
 	}
+	defer file.Close()
 
 	// Read the file into a buffer
 	buf := make([]byte, c.ChuckSize)
