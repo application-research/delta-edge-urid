@@ -15,6 +15,7 @@ type BucketsResponse struct {
 	DirCid      string    `json:"dir_cid"`
 	PieceSize   int64     `json:"piece_size"`
 	DownloadUrl string    `json:"download_url"`
+	TagName     string    `json:"tag_name"`
 	Status      string    `json:"status"`
 	Size        int64     `json:"size"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -139,6 +140,7 @@ func handleGetTaggedBuckets(node *core.LightNode) func(c echo.Context) error {
 				DirCid:     bucket.DirCid,
 				//DownloadUrl: "<a href=/gw/" + bucket.Cid + ">" + bucket.PieceCid + "</a>",
 				DownloadUrl: "/gw/" + bucket.Cid,
+				TagName:     bucket.Name,
 				Status:      bucket.Status,
 				Size:        bucket.Size,
 				CreatedAt:   bucket.CreatedAt,
@@ -171,6 +173,7 @@ func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 				//DownloadUrl: "<a href=/gw/" + bucket.Cid + ">" + bucket.PieceCid + "</a>",
 				DownloadUrl: "/gw/" + bucket.Cid,
 				Status:      bucket.Status,
+				TagName:     bucket.Name,
 				Size:        bucket.Size,
 				CreatedAt:   bucket.CreatedAt,
 				UpdatedAt:   bucket.UpdatedAt,

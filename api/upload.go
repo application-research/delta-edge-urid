@@ -198,7 +198,6 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 		authParts := strings.Split(authorizationString, " ")
 		tagName := c.FormValue("tag_name")
 
-		fmt.Println("tag name", tagName)
 		// Check capacity if needed
 		if node.Config.Common.CapacityLimitPerKeyInBytes > 0 {
 			if err := validateCapacityLimit(node, authParts[1]); err != nil {
@@ -214,6 +213,10 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 		if tagName == "" {
 			tagName = "default"
 		}
+
+		// load the policy of the tag
+		var policy core.Policy
+		node.DB.Where("name = ?", tagName).First(&policy)
 
 		file, err := c.FormFile("data")
 		if err != nil {
@@ -293,8 +296,9 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 					Name:             tagName,
 					RequestingApiKey: authParts[1],
 					//DeltaNodeUrl:     DeltaUploadApi,
-					Uuid: bucketUuid.String(),
-					Size: file.Size,
+					Uuid:     bucketUuid.String(),
+					PolicyId: policy.ID,
+					Size:     file.Size,
 					//Miner:            miner, // blank
 					//Tag:       tag,
 					CreatedAt: time.Now(),
