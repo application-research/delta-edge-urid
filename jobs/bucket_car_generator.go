@@ -117,7 +117,7 @@ func (r *BucketCarGenerator) GenerateCarForBucket(bucketUuid string) error {
 	bucket.DirCid = dirNode.Cid().String()
 	bucket.Size = int64(carSize)
 	bucket.Cid = bufFileN.Cid().String()
-	bucket.Status = "ready-for-deal-making"
+	bucket.Status = "ready"
 	r.LightNode.DB.Save(&bucket)
 
 	return nil

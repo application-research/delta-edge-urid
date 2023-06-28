@@ -128,7 +128,7 @@ func handleGetCollections(node *core.LightNode) func(c echo.Context) error {
 		}
 
 		var buckets []core.Bucket
-		node.DB.Model(&core.Bucket{}).Where("status = ? and name = ?", "ready-for-deal-making", tagName).Find(&buckets)
+		node.DB.Model(&core.Bucket{}).Where("status = ? and name = ?", "ready", tagName).Find(&buckets)
 
 		var bucketsResponse []BucketsResponse
 		for _, bucket := range buckets {
@@ -160,7 +160,7 @@ func handleGetCollections(node *core.LightNode) func(c echo.Context) error {
 func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		var buckets []core.Bucket
-		node.DB.Model(&core.Bucket{}).Where("status = ?", "ready-for-deal-making").Find(&buckets)
+		node.DB.Model(&core.Bucket{}).Where("status = ?", "ready").Find(&buckets)
 
 		var bucketsResponse []BucketsResponse
 		for _, bucket := range buckets {
