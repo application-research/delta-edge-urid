@@ -49,7 +49,7 @@ type AuthResponse struct {
 func GetDefaultTagPolicy(ln *core.LightNode) error {
 
 	// remove the current default tag policy
-	if err := ln.DB.Where("name = ?", "default").Delete(&core.Policy{}).Error; err != nil {
+	if err := ln.DB.Model(&core.Policy{}).Where("name = ?", "default").Delete(&core.Policy{}).Error; err != nil {
 		return xerrors.Errorf("failed to remove default tag policy: %w", err)
 	}
 
@@ -151,6 +151,7 @@ func InitializeEchoRouterConfig(ln *core.LightNode) {
 	ConfigureRetrieveRouter(apiGroup, ln)
 	ConfigureUploadRouter(apiGroup, ln)
 	ConfigureBucketsRouter(defaultOpenRoute, ln)
+	ConfigureTagsRouter(defaultOpenRoute, ln)
 	ConfigureStatusCheckRouter(apiGroup, ln)
 
 	// Start server

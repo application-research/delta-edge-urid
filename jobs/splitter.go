@@ -32,9 +32,13 @@ func (r *SplitterProcessor) Info() error {
 
 func (r *SplitterProcessor) Run() error {
 
+	// load the policy
+	var policy core.Policy
+	r.LightNode.DB.Model(&core.Policy{}).Where("name = ?", r.Content.TagName).First(&policy)
+
 	// split the file.
 	fileSplitter := new(core.FileSplitter)
-	fileSplitter.ChuckSize = r.LightNode.Config.Common.SplitSize
+	fileSplitter.ChuckSize = policy.SplitSize
 	arrBts, err := fileSplitter.SplitFileFromReader(r.File) // nice split.
 	if err != nil {
 		panic(err)
@@ -48,6 +52,7 @@ func (r *SplitterProcessor) Run() error {
 		RequestingApiKey: r.Content.RequestingApiKey,
 		Uuid:             bucketUuid.String(),
 		Miner:            r.Content.Miner,
+		PolicyId:         policy.ID,
 		CreatedAt:        time.Now(),
 		UpdatedAt:        time.Now(),
 	}
