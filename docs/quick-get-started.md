@@ -1,5 +1,5 @@
 # Edge-URID Node
-![image](https://github.com/application-research/delta-edge/assets/4479171/73b8ed29-1914-4a24-9210-713233fd626f)
+
 
 ## Set up the .env file
 ```
@@ -8,13 +8,6 @@ NODE_NAME=edge
 NODE_DESCRIPTION=Edge node
 DB_DSN=edge-urdb
 ADMIN_API_KEY=ED_UUID_GE
-
-# aggregate size
-AGGREGATE_SIZE=4294967296 
-
-# file splitter size
-MAX_SIZE_TO_SPLIT=32000000000
-SPLIT_SIZE=5048576000
 ```
 
 ## Upload a file
@@ -22,12 +15,13 @@ SPLIT_SIZE=5048576000
 curl --location --request POST 'http://localhost:1313/api/v1/content/add' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY] \
 --form 'data=@"./random_'${ms}'.dat"'
+--tag_name='mytag1'
 {"status":"success","message":"File uploaded and pinned successfully. Please take note of the ids.","contents":[{"ID":137,"name":"random_1687284235N.dat","size":500000,"cid":"bafybeih4zdw6qsevg5n7qwujoxymycoj6lk7xhi2l2wxqmtcw5gutmubj4","delta_content_id":0,"delta_node_url":"http://localhost:1414","bucket_uuid":"d2615178-0f94-11ee-b379-9e0bf0c70138","status":"pinned","piece_cid":"","piece_size":0,"inclusion_proof":"","last_message":"","miner":"","make_deal":true,"created_at":"2023-06-20T14:03:55.816414-04:00","updated_at":"2023-06-20T14:03:55.816414-04:00"}]}
 ```
 
 ## Get open buckets
 ```
-curl --location 'http://localhost:1313/buckets/get-open' \
+curl --location 'http://localhost:1313/buckets/get/open' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY]'
 [
     {
@@ -112,6 +106,41 @@ curl --location 'http://localhost:1313/buckets/get-open' \
     }
 ]
 ```
+
+## Get tagged buckets
+```
+curl --location 'http://localhost:1313/buckets/get/tagged?tag_name=mytag1' \
+--header 'Authorization: Bearer [ANY VALID DELTA API KEY]'
+[
+    {
+        "bucket_uuid": "44f99d32-1538-11ee-bb54-9e0bf0c70138",
+        "piece_cid": "baga6ea4seaqpz62dj2ohpla4t5squru4lj7nhuzmyo36mvpe7gmfjlfgwp3biaa",
+        "payload_cid": "bafybeidfqcha75i3sntooe3h5aq5iyfuqbw6ply4u4inag76rme2bscyne",
+        "dir_cid": "bafybeiafjs7rlm42ejykzw4vb66xdbibw7tfpimbgqnexooaegjdvg3mlq",
+        "piece_size": 8192,
+        "download_url": "/gw/bafybeidfqcha75i3sntooe3h5aq5iyfuqbw6ply4u4inag76rme2bscyne",
+        "tag_name": "mytag1",
+        "status": "ready-for-deal-making",
+        "size": 5478,
+        "created_at": "2023-06-27T18:16:31.462588-04:00",
+        "updated_at": "2023-06-27T18:16:59.334721-04:00"
+    },
+    {
+        "bucket_uuid": "561be458-1538-11ee-bb54-9e0bf0c70138",
+        "piece_cid": "baga6ea4seaqpz62dj2ohpla4t5squru4lj7nhuzmyo36mvpe7gmfjlfgwp3biaa",
+        "payload_cid": "bafybeidfqcha75i3sntooe3h5aq5iyfuqbw6ply4u4inag76rme2bscyne",
+        "dir_cid": "bafybeiafjs7rlm42ejykzw4vb66xdbibw7tfpimbgqnexooaegjdvg3mlq",
+        "piece_size": 8192,
+        "download_url": "/gw/bafybeidfqcha75i3sntooe3h5aq5iyfuqbw6ply4u4inag76rme2bscyne",
+        "tag_name": "mytag1",
+        "status": "ready-for-deal-making",
+        "size": 5478,
+        "created_at": "2023-06-27T18:17:00.208447-04:00",
+        "updated_at": "2023-06-27T18:17:00.989456-04:00"
+    }
+]
+```
+
 ## Delete bucket
 ```
 curl --location --request DELETE 'http://localhost:1313/buckets/0f7c1368-0f90-11ee-8024-9e0bf0c70138' \
