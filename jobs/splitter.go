@@ -34,7 +34,7 @@ func (r *SplitterProcessor) Run() error {
 
 	// load the policy
 	var policy core.Policy
-	r.LightNode.DB.Model(&core.Policy{}).Where("name = ?", r.Content.TagName).First(&policy)
+	r.LightNode.DB.Model(&core.Policy{}).Where("name = ?", r.Content.CollectionName).First(&policy)
 
 	// split the file.
 	fileSplitter := new(core.FileSplitter)
@@ -48,7 +48,7 @@ func (r *SplitterProcessor) Run() error {
 	bucketUuid, err := uuid.NewUUID()
 	bucket := core.Bucket{
 		Status:           "open",
-		Name:             r.Content.TagName,
+		Name:             r.Content.CollectionName,
 		RequestingApiKey: r.Content.RequestingApiKey,
 		Uuid:             bucketUuid.String(),
 		Miner:            r.Content.Miner,
@@ -73,7 +73,7 @@ func (r *SplitterProcessor) Run() error {
 			RequestingApiKey: r.Content.RequestingApiKey,
 			Status:           utils.STATUS_PINNED,
 			Miner:            r.Content.Miner,
-			TagName:          r.Content.TagName,
+			CollectionName:   r.Content.CollectionName,
 			BucketUuid:       bucket.Uuid,
 			MakeDeal:         true,
 			CreatedAt:        time.Now(),

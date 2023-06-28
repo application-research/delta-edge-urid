@@ -117,7 +117,7 @@ func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
 		authParts := strings.Split(authorizationString, " ")
 
 		var bucket core.Bucket
-		node.DB.Model(&core.Bucket{}).Where("requesting_api_key = ? and tag_name = ?", authParts[1], c.Param("tag-name")).Scan(&bucket)
+		node.DB.Model(&core.Bucket{}).Where("requesting_api_key = ? and collection_name = ?", authParts[1], c.Param("tag-name")).Scan(&bucket)
 
 		// get the cid
 		bucketCid, err := cid.Decode(bucket.Cid)

@@ -9,24 +9,24 @@ import (
 )
 
 type BucketsResponse struct {
-	BucketUUID  string    `json:"bucket_uuid"`
-	PieceCid    string    `json:"piece_cid"`
-	PayloadCid  string    `json:"payload_cid"`
-	DirCid      string    `json:"dir_cid"`
-	PieceSize   int64     `json:"piece_size"`
-	DownloadUrl string    `json:"download_url"`
-	TagName     string    `json:"tag_name"`
-	Status      string    `json:"status"`
-	Size        int64     `json:"size"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	BucketUUID     string    `json:"bucket_uuid"`
+	PieceCid       string    `json:"piece_cid"`
+	PayloadCid     string    `json:"payload_cid"`
+	DirCid         string    `json:"dir_cid"`
+	PieceSize      int64     `json:"piece_size"`
+	DownloadUrl    string    `json:"download_url"`
+	CollectionName string    `json:"collection_name"`
+	Status         string    `json:"status"`
+	Size           int64     `json:"size"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 func ConfigureBucketsRouter(e *echo.Group, node *core.LightNode) {
 	//var DeltaUploadApi = node.Config.Delta.ApiUrl
 	buckets := e.Group("/buckets")
 	buckets.GET("/get/open", handleGetOpenBuckets(node))
-	buckets.GET("/get/tagged", handleGetTaggedBuckets(node))
+	buckets.GET("/get/collections", handleGetCollections(node))
 	buckets.POST("/create", handleCreateBucket(node))
 	buckets.DELETE("/:uuid", handleDeleteBucket(node))
 
@@ -116,10 +116,10 @@ func handleDeleteBucket(node *core.LightNode) func(c echo.Context) error {
 		})
 	}
 }
-func handleGetTaggedBuckets(node *core.LightNode) func(c echo.Context) error {
+func handleGetCollections(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
-		tagName := c.QueryParam("tag_name")
+		tagName := c.QueryParam("collection_name")
 
 		if tagName == "" {
 			return c.JSON(400, map[string]interface{}{
@@ -139,12 +139,12 @@ func handleGetTaggedBuckets(node *core.LightNode) func(c echo.Context) error {
 				PayloadCid: bucket.Cid,
 				DirCid:     bucket.DirCid,
 				//DownloadUrl: "<a href=/gw/" + bucket.Cid + ">" + bucket.PieceCid + "</a>",
-				DownloadUrl: "/gw/" + bucket.Cid,
-				TagName:     bucket.Name,
-				Status:      bucket.Status,
-				Size:        bucket.Size,
-				CreatedAt:   bucket.CreatedAt,
-				UpdatedAt:   bucket.UpdatedAt,
+				DownloadUrl:    "/gw/" + bucket.Cid,
+				CollectionName: bucket.Name,
+				Status:         bucket.Status,
+				Size:           bucket.Size,
+				CreatedAt:      bucket.CreatedAt,
+				UpdatedAt:      bucket.UpdatedAt,
 			})
 		}
 
@@ -171,12 +171,12 @@ func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 				PayloadCid: bucket.Cid,
 				DirCid:     bucket.DirCid,
 				//DownloadUrl: "<a href=/gw/" + bucket.Cid + ">" + bucket.PieceCid + "</a>",
-				DownloadUrl: "/gw/" + bucket.Cid,
-				Status:      bucket.Status,
-				TagName:     bucket.Name,
-				Size:        bucket.Size,
-				CreatedAt:   bucket.CreatedAt,
-				UpdatedAt:   bucket.UpdatedAt,
+				DownloadUrl:    "/gw/" + bucket.Cid,
+				Status:         bucket.Status,
+				CollectionName: bucket.Name,
+				Size:           bucket.Size,
+				CreatedAt:      bucket.CreatedAt,
+				UpdatedAt:      bucket.UpdatedAt,
 			})
 		}
 

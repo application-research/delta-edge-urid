@@ -15,7 +15,7 @@ ADMIN_API_KEY=ED_UUID_GE
 curl --location --request POST 'http://localhost:1313/api/v1/content/add' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY] \
 --form 'data=@"./random_'${ms}'.dat"'
---tag_name='mytag1'
+--collection_name='mytag1'
 {"status":"success","message":"File uploaded and pinned successfully. Please take note of the ids.","contents":[{"ID":137,"name":"random_1687284235N.dat","size":500000,"cid":"bafybeih4zdw6qsevg5n7qwujoxymycoj6lk7xhi2l2wxqmtcw5gutmubj4","delta_content_id":0,"delta_node_url":"http://localhost:1414","bucket_uuid":"d2615178-0f94-11ee-b379-9e0bf0c70138","status":"pinned","piece_cid":"","piece_size":0,"inclusion_proof":"","last_message":"","miner":"","make_deal":true,"created_at":"2023-06-20T14:03:55.816414-04:00","updated_at":"2023-06-20T14:03:55.816414-04:00"}]}
 ```
 
@@ -109,7 +109,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
 
 ## Get tagged buckets
 ```
-curl --location 'http://localhost:1313/buckets/get/tagged?tag_name=mytag1' \
+curl --location 'http://localhost:1313/buckets/get/tagged?collection_name=mytag1' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY]'
 [
     {
@@ -119,7 +119,7 @@ curl --location 'http://localhost:1313/buckets/get/tagged?tag_name=mytag1' \
         "dir_cid": "bafybeiafjs7rlm42ejykzw4vb66xdbibw7tfpimbgqnexooaegjdvg3mlq",
         "piece_size": 8192,
         "download_url": "/gw/bafybeidfqcha75i3sntooe3h5aq5iyfuqbw6ply4u4inag76rme2bscyne",
-        "tag_name": "mytag1",
+        "collection_name": "mytag1",
         "status": "ready-for-deal-making",
         "size": 5478,
         "created_at": "2023-06-27T18:16:31.462588-04:00",
@@ -132,7 +132,7 @@ curl --location 'http://localhost:1313/buckets/get/tagged?tag_name=mytag1' \
         "dir_cid": "bafybeiafjs7rlm42ejykzw4vb66xdbibw7tfpimbgqnexooaegjdvg3mlq",
         "piece_size": 8192,
         "download_url": "/gw/bafybeidfqcha75i3sntooe3h5aq5iyfuqbw6ply4u4inag76rme2bscyne",
-        "tag_name": "mytag1",
+        "collection_name": "mytag1",
         "status": "ready-for-deal-making",
         "size": 5478,
         "created_at": "2023-06-27T18:17:00.208447-04:00",

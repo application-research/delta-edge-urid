@@ -197,7 +197,7 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 	return func(c echo.Context) error {
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
-		tagName := c.FormValue("tag_name")
+		collectionName := c.FormValue("collection_name")
 
 		// Check capacity if needed
 		if node.Config.Common.CapacityLimitPerKeyInBytes > 0 {
@@ -210,14 +210,14 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 		}
 
 		// check if tag exists, if it does, get the ID
-		fmt.Println(tagName)
-		if tagName == "" {
-			tagName = "default"
+		fmt.Println(collectionName)
+		if collectionName == "" {
+			collectionName = "default"
 		}
 
 		// load the policy of the tag
 		var policy core.Policy
-		node.DB.Where("name = ?", tagName).First(&policy)
+		node.DB.Where("name = ?", collectionName).First(&policy)
 
 		file, err := c.FormFile("data")
 		if err != nil {
@@ -249,7 +249,7 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 				Name:             file.Filename,
 				Size:             file.Size,
 				Cid:              addNode.Cid().String(),
-				TagName:          tagName,
+				CollectionName:   collectionName,
 				RequestingApiKey: authParts[1],
 				Status:           utils.STATUS_PINNED,
 				MakeDeal:         true,
@@ -277,10 +277,10 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 
 			if node.Config.Common.AggregatePerApiKey {
 				rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ? and requesting_api_key = ?"
-				node.DB.Raw(rawQuery, "open", tagName, authParts[1]).First(&bucket)
+				node.DB.Raw(rawQuery, "open", collectionName, authParts[1]).First(&bucket)
 			} else {
 				rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ?"
-				node.DB.Raw(rawQuery, "open", tagName).First(&bucket)
+				node.DB.Raw(rawQuery, "open", collectionName).First(&bucket)
 			}
 
 			if bucket.ID == 0 {
@@ -294,7 +294,7 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 				}
 				bucket = core.Bucket{
 					Status:           "open",
-					Name:             tagName,
+					Name:             collectionName,
 					RequestingApiKey: authParts[1],
 					//DeltaNodeUrl:     DeltaUploadApi,
 					Uuid:     bucketUuid.String(),
@@ -317,11 +317,11 @@ func handleUploadToCarBucketAndMiners(node *core.LightNode, DeltaUploadApi strin
 				Status:           utils.STATUS_PINNED,
 				//Miner:            miner,
 				//Tag:        tag,
-				TagName:    tagName,
-				BucketUuid: bucket.Uuid,
-				MakeDeal:   true,
-				CreatedAt:  time.Now(),
-				UpdatedAt:  time.Now(),
+				CollectionName: collectionName,
+				BucketUuid:     bucket.Uuid,
+				MakeDeal:       true,
+				CreatedAt:      time.Now(),
+				UpdatedAt:      time.Now(),
 			}
 
 			node.DB.Create(&newContent)

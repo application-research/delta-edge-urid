@@ -14,15 +14,15 @@ type CreateTagRequest struct {
 	SplitSize  int64  `json:"split_size"`  // if its more than 0
 }
 
-func ConfigureTagsRouter(e *echo.Group, node *core.LightNode) {
+func ConfigureCollectionsRouter(e *echo.Group, node *core.LightNode) {
 	//var DeltaUploadApi = node.Config.Delta.ApiUrl
-	buckets := e.Group("/tags")
-	buckets.GET("/create", handleCreateTag(node))
-	buckets.POST("/modify", handleModifyTag(node))
-	buckets.DELETE("/remove/:tag-name", handleDeleteBucket(node))
+	buckets := e.Group("/collections")
+	buckets.GET("/create", handleCreateCollection(node))
+	buckets.POST("/modify", handleModifyCollection(node))
+	//buckets.DELETE("/remove/:collection-name", handleDeleteBucket(node))
 
 }
-func handleCreateTag(node *core.LightNode) func(c echo.Context) error {
+func handleCreateCollection(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
 		// authorize
@@ -81,7 +81,7 @@ func handleCreateTag(node *core.LightNode) func(c echo.Context) error {
 	}
 }
 
-func handleModifyTag(node *core.LightNode) func(c echo.Context) error {
+func handleModifyCollection(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
 		return nil

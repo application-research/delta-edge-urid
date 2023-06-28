@@ -13,7 +13,7 @@ Once you have a node and API key, you can upload a file to the node using the fo
 curl --location 'http://localhost:1313/api/v1/content/add' \
 --header 'Authorization: Bearer [API_KEY]' \
 --form 'data=@"/path/to/file"'
---tag_name='mytag1'
+--collection_name='mytag1'
 {
     "status": "success",
     "message": "File uploaded and pinned successfully. Please take note of the ids.",
@@ -29,7 +29,7 @@ curl --location 'http://localhost:1313/api/v1/content/add' \
             "bucket_uuid": "561be458-1538-11ee-bb54-9e0bf0c70138",
             "status": "pinned",
             "make_deal": true,
-            "tag_name": "mytag1",
+            "collection_name": "mytag1",
             "created_at": "2023-06-27T18:17:00.986323-04:00",
             "updated_at": "2023-06-27T18:17:00.986324-04:00"
         }

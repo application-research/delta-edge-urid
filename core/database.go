@@ -117,7 +117,7 @@ type Content struct {
 	LastMessage      string    `json:"last_message"`
 	Miner            string    `json:"miner"`
 	MakeDeal         bool      `json:"make_deal"`
-	TagName          string    `json:"tag_name"`
+	CollectionName   string    `json:"collection_name"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
 }
