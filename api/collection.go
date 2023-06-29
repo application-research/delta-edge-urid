@@ -54,7 +54,7 @@ func handleCreateCollection(node *core.LightNode) func(c echo.Context) error {
 		node.DB.Raw("select * from buckets as b where name = ?", tagName).Scan(&bucket)
 		if bucket.ID != 0 {
 			return c.JSON(400, map[string]interface{}{
-				"message": "Tag name already exist",
+				"message": "Collection name already exist",
 			})
 		}
 
