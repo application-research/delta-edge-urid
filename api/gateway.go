@@ -218,7 +218,7 @@ func validate(c echo.Context, node *core.LightNode) error {
 	authParts := strings.Split(authorizationString, " ")
 
 	response, err := http.Post(
-		node.Config.Delta.AuthSvcUrl+"/check-api-key",
+		node.Config.ExternalApi.AuthSvcUrl+"/check-api-key",
 		"application/json",
 		strings.NewReader(fmt.Sprintf(`{"token": "%s"}`, authParts[1])),
 	)

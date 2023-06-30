@@ -36,11 +36,9 @@ type EdgeConfig struct {
 		CapacityLimitPerKeyInBytes int64 `env:"CAPACITY_LIMIT_PER_KEY_IN_BYTES" envDefault:"0"`
 	}
 
-	Delta struct {
-		ApiUrl            string `env:"DELTA_NODE_API" envDefault:"http://localhost:1414"`
-		AuthSvcUrl        string `env:"AUTH_SVC_API" envDefault:"https://auth.estuary.tech"`
-		DealCheck         int    `env:"DEAL_CHECK" envDefault:"600"`
-		ReplicationFactor int    `env:"REPLICATION_FACTOR" envDefault:"3"`
+	ExternalApi struct {
+		AuthSvcUrl  string `env:"AUTH_SVC_API" envDefault:"https://auth.estuary.tech"`
+		DeltaSvcUrl string `env:"DELTA_SVC_API" envDefault:"https://delta.estuary.tech"`
 	}
 }
 

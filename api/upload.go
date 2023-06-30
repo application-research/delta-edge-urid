@@ -63,7 +63,7 @@ type UploadResponse struct {
 }
 
 func ConfigureUploadRouter(e *echo.Group, node *core.LightNode) {
-	var DeltaUploadApi = node.Config.Delta.ApiUrl
+	var DeltaUploadApi = node.Config.ExternalApi.DeltaSvcUrl
 	content := e.Group("/content")
 	content.POST("/add", handleUploadToCarBucket(node, DeltaUploadApi))
 	content.POST("/add-car", handleUploadCarToBucket(node, DeltaUploadApi))

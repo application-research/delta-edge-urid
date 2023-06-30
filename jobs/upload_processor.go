@@ -125,7 +125,7 @@ type DealE2EUploadResponse struct {
 }
 
 func NewUploadToDeltaProcessor(ln *core.LightNode, contentToProcess core.Content, fileNode io.Reader) IProcessor {
-	DELTA_UPLOAD_API = ln.Config.Delta.ApiUrl
+	DELTA_UPLOAD_API = ln.Config.ExternalApi.DeltaSvcUrl
 	REPLICATION_FACTOR = string(ln.Config.Common.ReplicationFactor)
 	return &UploadToDeltaProcessor{
 		contentToProcess,
