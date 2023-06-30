@@ -49,13 +49,13 @@ type AuthResponse struct {
 func GetDefaultTagPolicy(ln *core.LightNode) error {
 
 	// remove the current default tag policy
-	if err := ln.DB.Model(&core.Policy{}).Where("name = ?", "default").Delete(&core.Policy{}).Error; err != nil {
+	if err := ln.DB.Model(&core.Policy{}).Where("name = ?", ln.Config.Node.DefaultCollectionName).Delete(&core.Policy{}).Error; err != nil {
 		return xerrors.Errorf("failed to remove default tag policy: %w", err)
 	}
 
 	// create a new default tag policy
 	newTagPolicy := core.Policy{
-		Name:       "default",
+		Name:       ln.Config.Node.DefaultCollectionName,
 		BucketSize: ln.Config.Common.BucketAggregateSize,
 		SplitSize:  ln.Config.Common.SplitSize,
 		CreatedAt:  time.Now(),

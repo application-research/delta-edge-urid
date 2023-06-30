@@ -15,14 +15,15 @@ var (
 
 type EdgeConfig struct {
 	Node struct {
-		Name        string `env:"NODE_NAME" envDefault:"edge-ur"`
-		Description string `env:"NODE_DESCRIPTION"`
-		Type        string `env:"NODE_TYPE"`
-		DbDsn       string `env:"DB_DSN" envDefault:"edge-ur.db"`
-		Repo        string `env:"REPO" envDefault:"./whypfs"`
-		DsRepo      string `env:"DS_REPO" envDefault:"./whypfs"`
-		Port        int    `env:"PORT" envDefault:"1414"`
-		AdminApiKey string `env:"ADMIN_API_KEY" envDefault:"admin"`
+		Name                  string `env:"NODE_NAME" envDefault:"edge-ur"`
+		Description           string `env:"NODE_DESCRIPTION"`
+		Type                  string `env:"NODE_TYPE"`
+		DbDsn                 string `env:"DB_DSN" envDefault:"edge-ur.db"`
+		Repo                  string `env:"REPO" envDefault:"./whypfs"`
+		DsRepo                string `env:"DS_REPO" envDefault:"./whypfs"`
+		Port                  int    `env:"PORT" envDefault:"1414"`
+		AdminApiKey           string `env:"ADMIN_API_KEY" envDefault:"admin"`
+		DefaultCollectionName string `env:"DEFAULT_COLLECTION_NAME" envDefault:"default"`
 	}
 
 	Common struct {

@@ -8,6 +8,7 @@ NODE_NAME=edge
 NODE_DESCRIPTION=Edge node
 DB_DSN=edge-urdb
 ADMIN_API_KEY=ED_UUID_GE
+DEFAULT_COLLECTION_NAME=default
 ```
 
 ## Upload a file

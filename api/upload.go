@@ -96,7 +96,7 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		// check if tag exists, if it does, get the ID
 		fmt.Println(collectionName)
 		if collectionName == "" {
-			collectionName = "default"
+			collectionName = node.Config.Node.DefaultCollectionName
 		}
 
 		// load the policy of the tag
@@ -259,7 +259,7 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		// check if tag exists, if it does, get the ID
 		fmt.Println(collectionName)
 		if collectionName == "" {
-			collectionName = "default"
+			collectionName = node.Config.Node.DefaultCollectionName
 		}
 
 		// load the policy of the tag
