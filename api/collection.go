@@ -16,11 +16,54 @@ type CreateTagRequest struct {
 
 func ConfigureCollectionsRouter(e *echo.Group, node *core.LightNode) {
 	//var DeltaUploadApi = node.Config.Delta.ApiUrl
-	buckets := e.Group("/collections")
-	buckets.GET("/create", handleCreateCollection(node))
-	buckets.POST("/modify", handleModifyCollection(node))
+	collections := e.Group("/collections")
+	collections.GET("/get", handleGetCollections(node))
+	collections.GET("/create", handleCreateCollection(node))
+	collections.POST("/modify", handleModifyCollection(node))
 	//buckets.DELETE("/remove/:collection-name", handleDeleteBucket(node))
 
+}
+
+func handleGetCollections(node *core.LightNode) func(c echo.Context) error {
+	return func(c echo.Context) error {
+
+		tagName := c.QueryParam("name")
+
+		if tagName == "" {
+			return c.JSON(400, map[string]interface{}{
+				"message": "Please provide a collection name",
+			})
+		}
+
+		var buckets []core.Bucket
+		node.DB.Model(&core.Bucket{}).Where("status = ? and name = ?", "ready", tagName).Find(&buckets)
+
+		var bucketsResponse []BucketsResponse
+		for _, bucket := range buckets {
+			bucketsResponse = append(bucketsResponse, BucketsResponse{
+				BucketUUID: bucket.Uuid,
+				PieceCid:   bucket.PieceCid,
+				PieceSize:  bucket.PieceSize,
+				PayloadCid: bucket.Cid,
+				DirCid:     bucket.DirCid,
+				//DownloadUrl: "<a href=/gw/" + bucket.Cid + ">" + bucket.PieceCid + "</a>",
+				DownloadUrl:    "/gw/" + bucket.Cid,
+				CollectionName: bucket.Name,
+				Status:         bucket.Status,
+				Size:           bucket.Size,
+				CreatedAt:      bucket.CreatedAt,
+				UpdatedAt:      bucket.UpdatedAt,
+			})
+		}
+
+		if len(bucketsResponse) == 0 {
+			return c.JSON(404, map[string]interface{}{
+				"message":     "No open buckets found.",
+				"description": "This means that there are no buckets that are ready for deal making.",
+			})
+		}
+		return c.JSON(200, bucketsResponse)
+	}
 }
 func handleCreateCollection(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
