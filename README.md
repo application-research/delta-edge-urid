@@ -41,6 +41,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
         "piece_size": 4194304,
         "download_url": "/gw/bafybeigbevcu26ec33qdgcgfquzbyeeebsx6ifjqjgnsiweu3yxhznmgei",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:29:49.36727-04:00",
         "updated_at": "2023-06-20T13:29:50.324344-04:00"
@@ -51,6 +52,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
         "piece_size": 4194304,
         "download_url": "/gw/bafybeicdomb2q3sz4jvjeub6wuxfaxwmrehiv56zeh43trb3udg2mhdk54",
         "status": "ready",
+        "collection_name": "mytag2",
         "size": 2500485,
         "created_at": "2023-06-20T13:29:50.456101-04:00",
         "updated_at": "2023-06-20T13:29:51.372687-04:00"
@@ -61,6 +63,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
         "piece_size": 4194304,
         "download_url": "/gw/bafybeig2p6dlwzenrn2a4yo5izpqitmhxi2s2gwx75iitc4omcz44liej4",
         "status": "ready",
+        "collection_name": "mytag3",
         "size": 2500485,
         "created_at": "2023-06-20T13:29:51.511452-04:00",
         "updated_at": "2023-06-20T13:35:54.900899-04:00"
@@ -71,6 +74,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
         "piece_size": 4194304,
         "download_url": "/gw/bafybeib442ldouoxtd6abjk7m32e4pyvs4bdaat23jz6bnh2cia325ew5a",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:35:55.036883-04:00",
         "updated_at": "2023-06-20T13:35:55.708092-04:00"
@@ -81,6 +85,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
         "piece_size": 4194304,
         "download_url": "/gw/bafybeieqnenofuqcz2van4gccihs723v6pi5p5viwx43tnetti2rdx5pre",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:35:55.84093-04:00",
         "updated_at": "2023-06-20T13:35:56.677806-04:00"
@@ -91,6 +96,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
         "piece_size": 4194304,
         "download_url": "/gw/bafybeicumrvtfe52nteln7gifoblfp6bqauwu75ycuur4gvvs3doztzw3m",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:35:56.828402-04:00",
         "updated_at": "2023-06-20T14:03:53.399393-04:00"
@@ -101,6 +107,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
         "piece_size": 4194304,
         "download_url": "/gw/bafybeihgq7rccpg5alb5tavypeykugtbjpu6qdtsxuhwzf2x3v7uuep73q",
         "status": "ready",
+        "collection_name": "mytag4",
         "size": 2500485,
         "created_at": "2023-06-20T14:03:53.781874-04:00",
         "updated_at": "2023-06-20T14:03:55.055813-04:00"
@@ -110,7 +117,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
 
 ## Get open buckets based on collection name
 ```
-curl --location 'http://localhost:1313/buckets/get/collections?collection_name=mytag1' \
+curl --location 'http://localhost:1313/collections/get?name=mytag1' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY]'
 [
     {
@@ -119,6 +126,7 @@ curl --location 'http://localhost:1313/buckets/get/collections?collection_name=m
         "piece_size": 4194304,
         "download_url": "/gw/bafybeicqff43zsaz4njvvr3m2pu5pe7yyj5bfogud5ijmsmynstcts3y34",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:25:48.068312-04:00",
         "updated_at": "2023-06-20T13:29:49.23759-04:00"
@@ -129,6 +137,7 @@ curl --location 'http://localhost:1313/buckets/get/collections?collection_name=m
         "piece_size": 4194304,
         "download_url": "/gw/bafybeigbevcu26ec33qdgcgfquzbyeeebsx6ifjqjgnsiweu3yxhznmgei",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:29:49.36727-04:00",
         "updated_at": "2023-06-20T13:29:50.324344-04:00"
@@ -139,6 +148,7 @@ curl --location 'http://localhost:1313/buckets/get/collections?collection_name=m
         "piece_size": 4194304,
         "download_url": "/gw/bafybeicdomb2q3sz4jvjeub6wuxfaxwmrehiv56zeh43trb3udg2mhdk54",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:29:50.456101-04:00",
         "updated_at": "2023-06-20T13:29:51.372687-04:00"
@@ -149,6 +159,7 @@ curl --location 'http://localhost:1313/buckets/get/collections?collection_name=m
         "piece_size": 4194304,
         "download_url": "/gw/bafybeig2p6dlwzenrn2a4yo5izpqitmhxi2s2gwx75iitc4omcz44liej4",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:29:51.511452-04:00",
         "updated_at": "2023-06-20T13:35:54.900899-04:00"
@@ -159,6 +170,7 @@ curl --location 'http://localhost:1313/buckets/get/collections?collection_name=m
         "piece_size": 4194304,
         "download_url": "/gw/bafybeib442ldouoxtd6abjk7m32e4pyvs4bdaat23jz6bnh2cia325ew5a",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:35:55.036883-04:00",
         "updated_at": "2023-06-20T13:35:55.708092-04:00"
@@ -179,6 +191,7 @@ curl --location 'http://localhost:1313/buckets/get/collections?collection_name=m
         "piece_size": 4194304,
         "download_url": "/gw/bafybeicumrvtfe52nteln7gifoblfp6bqauwu75ycuur4gvvs3doztzw3m",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T13:35:56.828402-04:00",
         "updated_at": "2023-06-20T14:03:53.399393-04:00"
@@ -189,6 +202,7 @@ curl --location 'http://localhost:1313/buckets/get/collections?collection_name=m
         "piece_size": 4194304,
         "download_url": "/gw/bafybeihgq7rccpg5alb5tavypeykugtbjpu6qdtsxuhwzf2x3v7uuep73q",
         "status": "ready",
+        "collection_name": "mytag1",
         "size": 2500485,
         "created_at": "2023-06-20T14:03:53.781874-04:00",
         "updated_at": "2023-06-20T14:03:55.055813-04:00"
