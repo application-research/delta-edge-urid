@@ -276,12 +276,6 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		}
 
 		carHeader, err := car.LoadCar(context.Background(), node.Node.Blockstore, src)
-		addFile, err := node.Node.AddPinFile(context.Background(), src, nil)
-		rootsGet := getRoots(src)
-
-		for _, root := range rootsGet {
-			fmt.Println("root.String()", root.Cid)
-		}
 
 		if err != nil {
 			c.JSON(500, UploadResponse{
@@ -289,8 +283,6 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 				Message: "Error loading car file: " + err.Error(),
 			})
 		}
-		fmt.Println("addFile", addFile.Cid().String())
-		fmt.Println("carHeader.Roots[0].String()", carHeader.Roots[0].String())
 		rootCid := carHeader.Roots[0].String()
 
 		for _, root := range carHeader.Roots {
