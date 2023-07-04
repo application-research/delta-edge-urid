@@ -4,7 +4,7 @@ package core
 import (
 	"context"
 	"fmt"
-	"github.com/ipfs/go-merkledag"
+	"github.com/ipfs/boxo/ipld/merkledag"
 	"io"
 	"os"
 )

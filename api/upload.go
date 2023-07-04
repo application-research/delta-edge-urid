@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/application-research/edge-ur/jobs"
@@ -9,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ipld/go-car"
 	"github.com/labstack/echo/v4"
+	"io"
 	"strings"
 	"time"
 
@@ -193,19 +195,16 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			}
 
 			newContent := core.Content{
-				Name: file.Filename,
-				Size: file.Size,
-				Cid:  addNode.Cid().String(),
-				//DeltaNodeUrl:     DeltaUploadApi,
+				Name:             file.Filename,
+				Size:             file.Size,
+				Cid:              addNode.Cid().String(),
 				RequestingApiKey: authParts[1],
 				Status:           utils.STATUS_PINNED,
-				//Miner:            miner,
-				//Tag:        tag,
-				CollectionName: collectionName,
-				BucketUuid:     bucket.Uuid,
-				MakeDeal:       true,
-				CreatedAt:      time.Now(),
-				UpdatedAt:      time.Now(),
+				CollectionName:   collectionName,
+				BucketUuid:       bucket.Uuid,
+				MakeDeal:         true,
+				CreatedAt:        time.Now(),
+				UpdatedAt:        time.Now(),
 			}
 
 			node.DB.Create(&newContent)
@@ -277,14 +276,27 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		}
 
 		carHeader, err := car.LoadCar(context.Background(), node.Node.Blockstore, src)
+		addFile, err := node.Node.AddPinFile(context.Background(), src, nil)
+		rootsGet := getRoots(src)
+
+		for _, root := range rootsGet {
+			fmt.Println("root.String()", root.Cid)
+		}
+
 		if err != nil {
 			c.JSON(500, UploadResponse{
 				Status:  "error",
 				Message: "Error loading car file: " + err.Error(),
 			})
 		}
-
+		fmt.Println("addFile", addFile.Cid().String())
+		fmt.Println("carHeader.Roots[0].String()", carHeader.Roots[0].String())
 		rootCid := carHeader.Roots[0].String()
+
+		for _, root := range carHeader.Roots {
+			fmt.Println("root.String()", root.String())
+			rootCid = root.String()
+		}
 
 		// check open bucket
 		var contentList []core.Content
@@ -417,4 +429,32 @@ func validateCapacityLimit(node *core.LightNode, authKey string) error {
 	}
 
 	return nil
+}
+
+type roots struct {
+	Event    string `json:"event"`
+	Payload  int    `json:"payload"`
+	Stream   int    `json:"stream"`
+	Cid      string `json:"cid"`
+	Wiresize uint64 `json:"wiresize"`
+}
+
+func getRoots(rerr io.Reader) []roots {
+
+	var rs []roots
+	bs, _ := io.ReadAll(rerr)
+	e := string(bs)
+	els := strings.Split(e, "\n")
+	for _, el := range els {
+		if el == "" {
+			continue
+		}
+		var r roots
+		err := json.Unmarshal([]byte(el), &r)
+		if err != nil {
+			fmt.Printf("failed to unmarshal json: %s\n", el)
+		}
+		rs = append(rs, r)
+	}
+	return rs
 }
