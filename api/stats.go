@@ -13,6 +13,7 @@ type Stats struct {
 	TotalContentCount int `json:"total_content_count"`
 	TotalSize         int `json:"total_size"`
 	TotalApiKeys      int `json:"total_api_keys"`
+	TotalSignedUrls   int `json:"total_signed_urls"`
 }
 
 func ConfigureStatsRouter(e *echo.Group, node *core.LightNode) {
@@ -30,6 +31,11 @@ func ConfigureStatsRouter(e *echo.Group, node *core.LightNode) {
 		}
 
 		err = node.DB.Raw("select * from mv_total_size").Scan(&s.TotalSize).Error
+		if err != nil {
+			return c.JSON(500, err)
+		}
+
+		err = node.DB.Raw("select * from mv_content_signature_meta").Scan(&s.TotalSignedUrls).Error
 		if err != nil {
 			return c.JSON(500, err)
 		}

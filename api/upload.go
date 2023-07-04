@@ -2,15 +2,19 @@ package api
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/application-research/edge-ur/jobs"
 	"github.com/application-research/edge-ur/utils"
 	"github.com/google/uuid"
+	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car"
 	"github.com/labstack/echo/v4"
 	"io"
+	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -69,6 +73,8 @@ func ConfigureUploadRouter(e *echo.Group, node *core.LightNode) {
 	content := e.Group("/content")
 	content.POST("/add", handleUploadToCarBucket(node, DeltaUploadApi))
 	content.POST("/add-car", handleUploadCarToBucket(node, DeltaUploadApi))
+	content.POST("/delete/:contentId", handlePinDeleteToNodeToMiners(node, DeltaUploadApi))
+	content.POST("/request-signed-url", handleRequestSignedUrl(node, DeltaUploadApi))
 }
 
 type SignedUrlRequest struct {
@@ -77,6 +83,117 @@ type SignedUrlRequest struct {
 	ExpirationTimestamp time.Time `json:"expiration_timestamp"`
 	EdgeContentId       int64     `json:"edge_content_id"`
 	Signature           string    `json:"signature"`
+}
+
+func handleRequestSignedUrl(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		errValidate := validate(c, node)
+		if errValidate != nil {
+			return errValidate
+		}
+
+		var signedUrlRequest SignedUrlRequest
+		errBind := c.Bind(&signedUrlRequest)
+		if errBind != nil {
+			return errBind
+		}
+
+		// validate expiration timestamp
+		if signedUrlRequest.ExpirationTimestamp.Before(time.Now()) {
+			return c.JSON(http.StatusBadRequest, HttpErrorResponse{
+				Error: HttpError{
+					Code:    http.StatusBadRequest,
+					Reason:  http.StatusText(http.StatusBadRequest),
+					Details: "expiration timestamp is in the past",
+				},
+			})
+		}
+
+		// validate signature
+		_, errorVerify := utils.VerifyEcdsaSha512Signature(signedUrlRequest.Message, signedUrlRequest.Signature, utils.PUBLIC_KEY_PEM)
+		if errorVerify != nil {
+			return c.JSON(http.StatusBadRequest, HttpErrorResponse{
+				Error: HttpError{
+					Code:    http.StatusBadRequest,
+					Reason:  http.StatusText(http.StatusBadRequest),
+					Details: "signature is invalid: " + errorVerify.Error(),
+				},
+			})
+		}
+
+		// save this on the database
+		var contentSignatureMeta core.ContentSignatureMeta
+		contentSignatureMeta.Signature = signedUrlRequest.Signature
+		contentSignatureMeta.ContentId = int64(signedUrlRequest.EdgeContentId)
+		contentSignatureMeta.ExpirationTimestamp = signedUrlRequest.ExpirationTimestamp
+		contentSignatureMeta.CurrentTimestamp = signedUrlRequest.CurrentTimestamp
+		contentSignatureMeta.Message = signedUrlRequest.Message
+		contentSignatureMeta.CreatedAt = time.Now()
+		contentSignatureMeta.UpdatedAt = time.Now()
+		// generate signed url
+		hexSignature := hex.EncodeToString([]byte(signedUrlRequest.Signature))
+		signedUrl := "/gw/content/" + strconv.Itoa(int(contentSignatureMeta.ContentId)) + "?signature=" + hexSignature
+		contentSignatureMeta.SignedUrl = signedUrl
+
+		// save it on the database
+		node.DB.Create(&contentSignatureMeta) // save it
+
+		return c.JSON(200, struct {
+			Status    string `json:"status"`
+			Message   string `json:"message"`
+			SignedUrl string `json:"signed_url"`
+		}{
+			Status:    "success",
+			Message:   "signed url generated successfully",
+			SignedUrl: signedUrl,
+		})
+	}
+}
+
+func handlePinDeleteToNodeToMiners(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		authorizationString := c.Request().Header.Get("Authorization")
+		authParts := strings.Split(authorizationString, " ")
+		err := validate(c, node)
+		if err != nil {
+			return err
+		}
+
+		contentIdToDelete := c.Param("contentId")
+
+		// check if the auth key owns the content id
+		var content core.Content
+		node.DB.Where("id = ? and requesting_api_key = ?", contentIdToDelete, authParts[1]).First(&content)
+
+		if content.ID == 0 {
+			return c.JSON(http.StatusUnauthorized, HttpErrorResponse{
+				Error: HttpError{
+					Code:    http.StatusUnauthorized,
+					Reason:  http.StatusText(http.StatusUnauthorized),
+					Details: "The given API key does not own this content ID",
+				},
+			})
+		}
+
+		if content.ID != 0 {
+			cidToDelete, err := cid.Decode(content.Cid)
+			if err != nil {
+				return c.JSON(500, UploadResponse{
+					Status:  "error",
+					Message: "Error decoding the CID",
+				})
+			}
+
+			// delete from blockstore
+			node.Node.Blockservice.DeleteBlock(context.Background(), cidToDelete)
+
+			// soft delete from db
+			content.LastMessage = utils.STATUS_UNPINNED
+			content.Status = utils.STATUS_UNPINNED
+
+		}
+		return nil
+	}
 }
 
 func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {

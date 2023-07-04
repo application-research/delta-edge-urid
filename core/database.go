@@ -45,7 +45,7 @@ func OpenDatabase(cfg config.EdgeConfig) (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	db.AutoMigrate(&Content{}, &LogEvent{}, &Bucket{}, &Policy{})
+	db.AutoMigrate(&Content{}, &ContentDeal{}, &LogEvent{}, &Bucket{}, &Policy{}, &ContentSignatureMeta{})
 }
 
 type LogEvent struct {
