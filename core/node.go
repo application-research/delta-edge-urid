@@ -18,12 +18,12 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/chain/wallet/key"
-	"github.com/ipfs/go-blockservice"
-	bsfetcher "github.com/ipfs/go-fetcher/impl/blockservice"
+	"github.com/ipfs/boxo/blockservice"
+	bsfetcher "github.com/ipfs/boxo/fetcher/impl/blockservice"
+	"github.com/ipfs/boxo/ipld/merkledag"
+	"github.com/ipfs/boxo/path/resolver"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	mdagipld "github.com/ipfs/go-ipld-format"
-	"github.com/ipfs/go-merkledag"
-	"github.com/ipfs/go-path/resolver"
 	"github.com/ipfs/go-unixfsnode"
 	dagpb "github.com/ipld/go-codec-dagpb"
 	"github.com/ipld/go-ipld-prime"
@@ -79,6 +79,9 @@ func NewEdgeNode(ctx context.Context, cfg config.EdgeConfig) (*LightNode, error)
 		Ctx:       ctx,
 		Datastore: datastore.NewMapDatastore(),
 		Repo:      cfg.Node.Repo,
+		Config: &whypfs.Config{
+			NoLimiter: true,
+		},
 	}
 
 	params.Config = params.ConfigurationBuilder(newConfig)
@@ -113,7 +116,8 @@ func NewGatewayHandler(node *whypfs.Node) (*GatewayHandler, error) {
 		return ipldbasicnode.Prototype.Any, nil
 	})
 
-	resolver := resolver.NewBasicResolver(ipldFetcher.WithReifier(unixfsnode.Reify))
+	fetcher := ipldFetcher.WithReifier(unixfsnode.Reify)
+	resolver := resolver.NewBasicResolver(fetcher)
 	return &GatewayHandler{
 		bs:       node.Blockstore,
 		dserv:    merkledag.NewDAGService(bsvc),
