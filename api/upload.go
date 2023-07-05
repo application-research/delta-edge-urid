@@ -8,7 +8,8 @@ import (
 	"github.com/application-research/edge-ur/jobs"
 	"github.com/application-research/edge-ur/utils"
 	"github.com/google/uuid"
-	"github.com/ipld/go-car"
+	"github.com/ipfs/boxo/ipld/merkledag"
+	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
 	"io"
 	"strings"
@@ -275,28 +276,31 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			return err
 		}
 
-		carHeader, err := car.LoadCar(context.Background(), node.Node.Blockstore, src)
-
+		addFile, err := node.Node.AddPinFile(context.Background(), src, nil)
+		if err != nil {
+			return err
+		}
+		//carHeader, err := car.LoadCar(context.Background(), node.Node.Blockstore, src)
+		//getRootSrc := getRoots(src)
+		//ndbs, err := unixfs.NewFSNode(pb.Data_DataType(unixfs_pb.Data_Directory)).GetBytes()
+		//byteRead := make([]byte, 0)
+		//src.Read(byteRead)
+		//nd := merkledag.NodeWithData(//ndbs)
+		//nd.SetCidBuilder(cid.V1Builder{Codec: cid.DagProtobuf, MhType: multihash.SHA2_256})
+		//nd.SetData(byteRead)
+		//fmt.Println(nd.Cid())
 		if err != nil {
 			c.JSON(500, UploadResponse{
 				Status:  "error",
 				Message: "Error loading car file: " + err.Error(),
 			})
 		}
-		rootCid := carHeader.Roots[0].String()
 
-		for _, root := range carHeader.Roots {
-			fmt.Println("root.String()", root.String())
-			rootCid = root.String()
-		}
+		//rootCid := nd.Cid().String()
+		rootCid := addFile.Cid().String()
 
 		// check open bucket
 		var contentList []core.Content
-
-		//for miner := range miners {
-		fmt.Println("file.Size", file.Size)
-		fmt.Println("node.Config.Common.MaxSizeToSplit", node.Config.Common.MaxSizeToSplit)
-
 		if file.Size > node.Config.Common.MaxSizeToSplit {
 			newContent := core.Content{
 				Name:             file.Filename,
@@ -431,6 +435,14 @@ type roots struct {
 	Wiresize uint64 `json:"wiresize"`
 }
 
+type node struct {
+	name     string
+	children []*node
+	cid      cid.Cid
+	pbn      *merkledag.ProtoNode
+	size     uint64
+}
+
 func getRoots(rerr io.Reader) []roots {
 
 	var rs []roots
@@ -448,5 +460,17 @@ func getRoots(rerr io.Reader) []roots {
 		}
 		rs = append(rs, r)
 	}
+
 	return rs
+}
+
+func getDirectoryNodes(node *node) []*merkledag.ProtoNode {
+	var nodes []*merkledag.ProtoNode
+	nodes = append(nodes, node.pbn)
+	for _, child := range node.children {
+		if len(child.children) != 0 {
+			nodes = append(nodes, getDirectoryNodes(child)...)
+		}
+	}
+	return nodes
 }
