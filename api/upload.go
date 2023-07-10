@@ -67,8 +67,15 @@ type UploadResponse struct {
 func ConfigureUploadRouter(e *echo.Group, node *core.LightNode) {
 	var DeltaUploadApi = node.Config.ExternalApi.DeltaSvcUrl
 	content := e.Group("/content")
-	content.POST("/add", handleUploadToCarBucket(node, DeltaUploadApi))
-	content.POST("/add-car", handleUploadCarToBucket(node, DeltaUploadApi))
+	//content.POST("/add", handleUpload(node, DeltaUploadApi))
+	//content.POST("/add-car", handleUpload(node, DeltaUploadApi))
+
+	// impossible cloud specific
+	content.PUT("/put", handleUpload(node, DeltaUploadApi))
+	//content.GET("/get", handleUploadCarToBucket(node, DeltaUploadApi))
+	//content.GET("/track", handleUploadCarToBucket(node, DeltaUploadApi))
+	content.GET("/list", handleUploadCarToBucket(node, DeltaUploadApi))
+
 }
 
 type SignedUrlRequest struct {
@@ -79,11 +86,12 @@ type SignedUrlRequest struct {
 	Signature           string    `json:"signature"`
 }
 
-func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
+func handleUpload(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
 		collectionName := c.FormValue("collection_name")
+		objectId := c.FormValue("object_id")
 
 		// Check capacity if needed
 		if node.Config.Common.CapacityLimitPerKeyInBytes > 0 {
@@ -96,7 +104,6 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		}
 
 		// check if tag exists, if it does, get the ID
-		fmt.Println(collectionName)
 		if collectionName == "" {
 			collectionName = node.Config.Node.DefaultCollectionName
 		}
@@ -127,9 +134,6 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		var contentList []core.Content
 
 		//for miner := range miners {
-		fmt.Println("file.Size", file.Size)
-		fmt.Println("node.Config.Common.MaxSizeToSplit", node.Config.Common.MaxSizeToSplit)
-
 		if file.Size > node.Config.Common.MaxSizeToSplit {
 			newContent := core.Content{
 				Name:             file.Filename,
@@ -138,7 +142,6 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 				CollectionName:   collectionName,
 				RequestingApiKey: authParts[1],
 				Status:           utils.STATUS_PINNED,
-				MakeDeal:         true,
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
@@ -194,35 +197,58 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 				node.DB.Create(&bucket)
 			}
 
-			newContent := core.Content{
-				Name:             file.Filename,
-				Size:             file.Size,
-				Cid:              addNode.Cid().String(),
-				RequestingApiKey: authParts[1],
-				Status:           utils.STATUS_PINNED,
-				CollectionName:   collectionName,
-				BucketUuid:       bucket.Uuid,
-				MakeDeal:         true,
-				CreatedAt:        time.Now(),
-				UpdatedAt:        time.Now(),
+			// check if object id exist
+			var contentToModify core.Content
+			node.DB.Where("object_id = ?", objectId).First(&contentToModify)
+			if contentToModify.ID != 0 {
+
+				contentToModify.Name = file.Filename
+				contentToModify.Size = file.Size
+				contentToModify.Cid = addNode.Cid().String()
+				contentToModify.RequestingApiKey = authParts[1]
+				contentToModify.Status = utils.STATUS_PINNED
+				contentToModify.CollectionName = collectionName
+				contentToModify.BucketUuid = bucket.Uuid
+				contentToModify.UpdatedAt = time.Now()
+				node.DB.Create(&contentToModify)
+
+				job := jobs.CreateNewDispatcher()
+				job.AddJob(jobs.NewBucketAggregator(node, contentToModify, srcR, false))
+				job.Start(1)
+				contentToModify.RequestingApiKey = ""
+				contentList = append(contentList, contentToModify)
+
+			} else {
+				// new object id
+				objectUuid, errObjId := uuid.NewUUID()
+				if errObjId != nil {
+					return c.JSON(500, UploadResponse{
+						Status:  "error",
+						Message: "Error creating object",
+					})
+				}
+
+				newContent := core.Content{
+					Name:             file.Filename,
+					Size:             file.Size,
+					Cid:              addNode.Cid().String(),
+					RequestingApiKey: authParts[1],
+					ObjectId:         objectUuid.String(),
+					Status:           utils.STATUS_PINNED,
+					CollectionName:   collectionName,
+					BucketUuid:       bucket.Uuid,
+					CreatedAt:        time.Now(),
+					UpdatedAt:        time.Now(),
+				}
+
+				node.DB.Create(&newContent)
+				job := jobs.CreateNewDispatcher()
+				job.AddJob(jobs.NewBucketAggregator(node, newContent, srcR, false))
+				job.Start(1)
+				newContent.RequestingApiKey = ""
+				contentList = append(contentList, newContent)
 			}
 
-			node.DB.Create(&newContent)
-
-			//if makeDeal == "true" {
-			job := jobs.CreateNewDispatcher()
-			job.AddJob(jobs.NewBucketAggregator(node, newContent, srcR, false))
-			job.Start(1)
-			//}
-
-			if err != nil {
-				c.JSON(500, UploadResponse{
-					Status:  "error",
-					Message: "Error pinning the file" + err.Error(),
-				})
-			}
-			newContent.RequestingApiKey = ""
-			contentList = append(contentList, newContent)
 		}
 		//}
 
@@ -305,7 +331,6 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 				CollectionName:   collectionName,
 				RequestingApiKey: authParts[1],
 				Status:           utils.STATUS_PINNED,
-				MakeDeal:         true,
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
@@ -372,7 +397,6 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 				//Tag:        tag,
 				CollectionName: collectionName,
 				BucketUuid:     bucket.Uuid,
-				MakeDeal:       true,
 				CreatedAt:      time.Now(),
 				UpdatedAt:      time.Now(),
 			}

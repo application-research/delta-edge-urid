@@ -75,7 +75,6 @@ func (r *SplitterProcessor) Run() error {
 			Miner:            r.Content.Miner,
 			CollectionName:   r.Content.CollectionName,
 			BucketUuid:       bucket.Uuid,
-			MakeDeal:         true,
 			CreatedAt:        time.Now(),
 			UpdatedAt:        time.Now(),
 		}

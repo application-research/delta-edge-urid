@@ -45,7 +45,7 @@ func OpenDatabase(cfg config.EdgeConfig) (*gorm.DB, error) {
 }
 
 func ConfigureModels(db *gorm.DB) {
-	db.AutoMigrate(&Content{}, &ContentDeal{}, &LogEvent{}, &Bucket{}, &Policy{}, &ContentSignatureMeta{})
+	db.AutoMigrate(&Content{}, &ContentDeal{}, &LogEvent{}, &Bucket{}, &Policy{})
 }
 
 type LogEvent struct {
@@ -90,22 +90,11 @@ type Bucket struct {
 	UpdatedAt        time.Time `json:"updated_at"`
 }
 
-type ContentSignatureMeta struct {
-	ID                  int64     `gorm:"primaryKey"`
-	ContentId           int64     `json:"content_id"`
-	Signature           string    `json:"signature"`
-	CurrentTimestamp    time.Time `json:"current_timestamp"`
-	ExpirationTimestamp time.Time `json:"expiration_timestamp"`
-	SignedUrl           string    `json:"signed_url"`
-	Message             string    `json:"message"`
-	CreatedAt           time.Time `json:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at"`
-}
-
 // main content record
 type Content struct {
 	gorm.Model
 	ID               int64     `gorm:"primaryKey"`
+	ObjectId         string    `json:"object_id"`
 	Name             string    `json:"name"`
 	Size             int64     `json:"size"`
 	Cid              string    `json:"cid"`
@@ -116,7 +105,6 @@ type Content struct {
 	PieceSize        int64     `json:"piece_size"`
 	LastMessage      string    `json:"last_message"`
 	Miner            string    `json:"miner"`
-	MakeDeal         bool      `json:"make_deal"`
 	CollectionName   string    `json:"collection_name"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`

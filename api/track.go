@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type StatusCheckResponse struct {
+type TrackResponse struct {
 	Content struct {
 		ID             int64  `json:"id"`
 		Name           string `json:"name"`
@@ -21,8 +21,8 @@ type StatusCheckResponse struct {
 	} `json:"content"`
 }
 
-func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
-	e.GET("/status/object/:object_id", func(c echo.Context) error {
+func ConfigureTrackRouter(e *echo.Group, node *core.LightNode) {
+	e.GET("/track/object/:object_id", func(c echo.Context) error {
 
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
@@ -44,7 +44,7 @@ func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
 			"cids": contentCids,
 		})
 	})
-	e.GET("/status/cid/:cid", func(c echo.Context) error {
+	e.GET("/track/cid/:cid", func(c echo.Context) error {
 
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
@@ -66,7 +66,7 @@ func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
 			"cids": contentCids,
 		})
 	})
-	e.GET("/status/content/:contentId", func(c echo.Context) error {
+	e.GET("/track/content/:contentId", func(c echo.Context) error {
 
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
@@ -84,7 +84,7 @@ func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
 			"content": content,
 		})
 	})
-	e.GET("/status/bucket/:bucketUuid", func(c echo.Context) error {
+	e.GET("/track/bucket/:bucketUuid", func(c echo.Context) error {
 
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
@@ -133,7 +133,7 @@ func ConfigureStatusCheckRouter(e *echo.Group, node *core.LightNode) {
 			"content_links": contentResponse,
 		})
 	})
-	e.GET("/status/tag/:tag-name", func(c echo.Context) error {
+	e.GET("/track/tag/:tag-name", func(c echo.Context) error {
 
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
