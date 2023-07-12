@@ -15,10 +15,10 @@ var (
 
 type EdgeConfig struct {
 	Node struct {
-		Name                  string `env:"NODE_NAME" envDefault:"edge-ur"`
+		Name                  string `env:"NODE_NAME" envDefault:"edge-urid"`
 		Description           string `env:"NODE_DESCRIPTION"`
 		Type                  string `env:"NODE_TYPE"`
-		DbDsn                 string `env:"DB_DSN" envDefault:"edge-ur.db"`
+		DbDsn                 string `env:"DB_DSN" envDefault:"edge-urid.db"`
 		Repo                  string `env:"REPO" envDefault:"./whypfs"`
 		DsRepo                string `env:"DS_REPO" envDefault:"./whypfs"`
 		Port                  int    `env:"PORT" envDefault:"1414"`

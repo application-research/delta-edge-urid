@@ -126,10 +126,6 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		// check open bucket
 		var contentList []core.Content
 
-		//for miner := range miners {
-		fmt.Println("file.Size", file.Size)
-		fmt.Println("node.Config.Common.MaxSizeToSplit", node.Config.Common.MaxSizeToSplit)
-
 		if file.Size > node.Config.Common.MaxSizeToSplit {
 			newContent := core.Content{
 				Name:             file.Filename,
