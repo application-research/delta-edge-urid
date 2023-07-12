@@ -6,5 +6,6 @@
 - To get started retrieving files from the edge-urid node, please refer to the guide [here](retrieve_gateway.md).
 - To get started on uploading and retrieving the CAR files from the edge-urid node, please refer to the guide [here](upload_car_file.md).
 - To get started on getting open buckets from the edge-urid node, please refer to the guide [here](get_buckets_collections.md).
+
 # Author
 Protocol Labs Outercore Engineering.

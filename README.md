@@ -1,7 +1,8 @@
 # Edge-URID Node
 ![image](https://github.com/application-research/delta-edge/assets/4479171/73b8ed29-1914-4a24-9210-713233fd626f)
 
-## Set up the .env file
+## Quick start
+### Set up the .env file
 ```
 # node information
 NODE_NAME=edge
@@ -11,7 +12,7 @@ ADMIN_API_KEY=ED_UUID_GE
 DEFAULT_COLLECTION_NAME=default
 ```
 
-## Upload a file
+### Upload a file
 ```
 curl --location --request POST 'http://localhost:1313/api/v1/content/add' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY] \
@@ -20,7 +21,7 @@ curl --location --request POST 'http://localhost:1313/api/v1/content/add' \
 {"status":"success","message":"File uploaded and pinned successfully. Please take note of the ids.","contents":[{"ID":137,"name":"random_1687284235N.dat","size":500000,"cid":"bafybeih4zdw6qsevg5n7qwujoxymycoj6lk7xhi2l2wxqmtcw5gutmubj4","delta_content_id":0,"delta_node_url":"http://localhost:1414","bucket_uuid":"d2615178-0f94-11ee-b379-9e0bf0c70138","status":"pinned","piece_cid":"","piece_size":0,"inclusion_proof":"","last_message":"","miner":"","make_deal":true,"created_at":"2023-06-20T14:03:55.816414-04:00","updated_at":"2023-06-20T14:03:55.816414-04:00"}]}
 ```
 
-## Get open buckets
+### Get open buckets
 ```
 curl --location 'http://localhost:1313/buckets/get/open' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY]'
@@ -115,7 +116,7 @@ curl --location 'http://localhost:1313/buckets/get/open' \
 ]
 ```
 
-## Get open buckets based on collection name
+### Get open buckets based on collection name
 ```
 curl --location 'http://localhost:1313/collections/get?name=mytag1' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY]'
@@ -210,7 +211,7 @@ curl --location 'http://localhost:1313/collections/get?name=mytag1' \
 ]
 ```
 
-## Delete bucket
+### Delete bucket
 ```
 curl --location --request DELETE 'http://localhost:1313/buckets/0f7c1368-0f90-11ee-8024-9e0bf0c70138' \
 --header 'Authorization: Bearer ED_UUID_GE'
@@ -221,8 +222,16 @@ curl --location --request DELETE 'http://localhost:1313/buckets/0f7c1368-0f90-11
 ```
 
 
-## View the file using the gateway url
+### View the file using the gateway url
 ```bash
 http://localhost:1313/gw/<cid>
 http://localhost:1313/gw/content/<content_id>
 ```
+
+## To learn more about Edge-urid
+- [Getting started with Edge-urid](./docs/README.md)
+
+
+# Author
+Protocol Labs Outercore Engineering.
+
