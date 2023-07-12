@@ -153,6 +153,7 @@ func InitializeEchoRouterConfig(ln *core.LightNode) {
 	ConfigureBucketsRouter(defaultOpenRoute, ln)
 	ConfigureCollectionsRouter(defaultOpenRoute, ln)
 	ConfigureStatusCheckRouter(apiGroup, ln)
+	ConfigureStatusOpenCheckRouter(defaultOpenRoute, ln)
 
 	// Start server
 
