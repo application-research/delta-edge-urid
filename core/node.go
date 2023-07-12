@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/application-research/edge-ur/config"
-	"github.com/ipfs/go-datastore"
+	levelds "github.com/ipfs/go-ds-leveldb"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -78,9 +78,13 @@ func NewEdgeNode(ctx context.Context, cfg config.EdgeConfig) (*LightNode, error)
 		},
 	}
 	fmt.Println("cfg.Node.Repo is: ", cfg.Node.Repo)
+	ds, err := levelds.NewDatastore(cfg.Node.DsRepo, nil)
+	if err != nil {
+		panic(err)
+	}
 	params := whypfs.NewNodeParams{
 		Ctx:       ctx,
-		Datastore: datastore.NewMapDatastore(),
+		Datastore: ds,
 		Repo:      cfg.Node.Repo,
 		Config: &whypfs.Config{
 			NoLimiter: true,
