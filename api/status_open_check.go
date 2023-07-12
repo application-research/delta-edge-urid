@@ -57,7 +57,7 @@ func ConfigureStatusOpenCheckRouter(e *echo.Group, node *core.LightNode) {
 	e.GET("/status/bucket/:bucketUuid", func(c echo.Context) error {
 
 		var bucket core.Bucket
-		node.DB.Model(&core.Bucket{}).Where("uuid = ?", c.Param("uuid")).Scan(&bucket)
+		node.DB.Model(&core.Bucket{}).Where("uuid = ?", c.Param("bucketUuid")).Scan(&bucket)
 
 		// get the cid
 		bucketCid, err := cid.Decode(bucket.Cid)
