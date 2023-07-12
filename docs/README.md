@@ -1,4 +1,7 @@
-# Getting started with Edge UR (Upload and Retrieve) for Import Deals (edge-urid)
+# Getting started with Edge UR (Upload and Retrieve) for Import Deals (ID)
+
+![image](https://github.com/application-research/delta-edge-urid/assets/4479171/7980aba7-c094-4843-b7ee-88e145b792a1)
+
 
 - To get started running an edge-urid node, please refer to the guide [here](running_node.md).
 - To get started uploading and retrieving files to the edge-urid node, please refer to the guide [here](upload_file.md).
