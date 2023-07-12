@@ -74,7 +74,7 @@ func (r *BucketCarGenerator) GenerateCarForBucket(bucketUuid string) error {
 	dir.SetCidBuilder(GetCidBuilderDefault())
 	buf := new(bytes.Buffer)
 	for _, cAgg := range updateContentsForAgg {
-		fmt.Println("cAgg", cAgg.Cid, bucketUuid)
+		fmt.Println("aggregating file: ", cAgg.Cid, bucketUuid)
 		cCidAgg, err := cid.Decode(cAgg.Cid)
 		if err != nil {
 			log.Errorf("error decoding cid: %s", err)

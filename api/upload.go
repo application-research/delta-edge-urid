@@ -151,7 +151,7 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			job.Start(1)
 
 			if err != nil {
-				c.JSON(500, UploadResponse{
+				return c.JSON(500, UploadResponse{
 					Status:  "error",
 					Message: "Error pinning the file" + err.Error(),
 				})
@@ -216,7 +216,7 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			//}
 
 			if err != nil {
-				c.JSON(500, UploadResponse{
+				return c.JSON(500, UploadResponse{
 					Status:  "error",
 					Message: "Error pinning the file" + err.Error(),
 				})
@@ -226,7 +226,7 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		}
 		//}
 
-		c.JSON(200, struct {
+		return c.JSON(200, struct {
 			Status   string         `json:"status"`
 			Message  string         `json:"message"`
 			Contents []core.Content `json:"contents"`
@@ -235,8 +235,6 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			Message:  "File uploaded and pinned successfully. Please take note of the ids.",
 			Contents: contentList,
 		})
-
-		return nil
 	}
 }
 func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
@@ -278,7 +276,7 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		carHeader, err := car.LoadCar(context.Background(), node.Node.Blockstore, src)
 
 		if err != nil {
-			c.JSON(500, UploadResponse{
+			return c.JSON(500, UploadResponse{
 				Status:  "error",
 				Message: "Error loading car file: " + err.Error(),
 			})
@@ -318,7 +316,7 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			job.Start(1)
 
 			if err != nil {
-				c.JSON(500, UploadResponse{
+				return c.JSON(500, UploadResponse{
 					Status:  "error",
 					Message: "Error pinning the file" + err.Error(),
 				})
@@ -386,7 +384,7 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			//}
 
 			if err != nil {
-				c.JSON(500, UploadResponse{
+				return c.JSON(500, UploadResponse{
 					Status:  "error",
 					Message: "Error pinning the file" + err.Error(),
 				})
@@ -396,7 +394,7 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		}
 		//}
 
-		c.JSON(200, struct {
+		return c.JSON(200, struct {
 			Status   string         `json:"status"`
 			Message  string         `json:"message"`
 			Contents []core.Content `json:"contents"`
@@ -406,7 +404,6 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			Contents: contentList,
 		})
 
-		return nil
 	}
 }
 func validateCapacityLimit(node *core.LightNode, authKey string) error {

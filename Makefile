@@ -11,7 +11,7 @@ all: build
 .PHONY: build
 build:
 	go generate
-	go build -tags netgo -ldflags="-s -w -X main.Commit=$(COMMIT) -X main.Version=$(VERSION)" -o edge
+	go build -tags netgo -ldflags="-s -w -X main.Commit=$(COMMIT) -X main.Version=$(VERSION)" -o edgeurid
 
 .PHONY: clean
 clean:

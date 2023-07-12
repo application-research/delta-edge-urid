@@ -18,7 +18,7 @@ func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 
 	daemonCmd := &cli.Command{
 		Name:  "daemon",
-		Usage: "Edge gateway daemon that allows users to upload and download data to/from the Filecoin network.",
+		Usage: "EdgeURID gateway daemon that allows users to upload and download data to/from the Filecoin network.",
 
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -44,9 +44,7 @@ func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 
 			repo := c.String("repo")
 			port := c.String("port")
-			if repo == "" {
-				repo = cfg.Node.Repo
-			} else {
+			if repo != "" {
 				cfg.Node.Repo = repo
 			}
 			if port != "" {
@@ -64,7 +62,7 @@ func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 			}
 			fmt.Println(utils.Blue + "Setting up the Edge node... Done" + utils.Reset)
 
-			core.ScanHostComputeResources(ln, repo)
+			core.ScanHostComputeResources(ln, cfg.Node.Repo)
 			//	launch the jobs
 			//go runProcessors(ln)
 

@@ -104,7 +104,6 @@ type ContentSignatureMeta struct {
 
 // main content record
 type Content struct {
-	gorm.Model
 	ID               int64     `gorm:"primaryKey"`
 	Name             string    `json:"name"`
 	Size             int64     `json:"size"`

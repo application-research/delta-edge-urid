@@ -3,7 +3,7 @@ module github.com/application-research/edge-ur
 go 1.18
 
 require (
-	github.com/application-research/whypfs-core v0.2.0
+	github.com/application-research/whypfs-core v0.2.1-0.20230711231335-f38d0a977edc
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/filecoin-project/go-address v1.1.0
 	github.com/filecoin-project/go-fil-commcid v0.1.0

@@ -67,6 +67,9 @@ func NewEdgeNode(ctx context.Context, cfg config.EdgeConfig) (*LightNode, error)
 	newConfig := &whypfs.Config{
 		ListenAddrs: []string{
 			"/ip4/0.0.0.0/tcp/6745",
+			"/ip4/0.0.0.0/tcp/4001",
+			"/ip4/0.0.0.0/udp/4001/quic",
+			"/ip4/0.0.0.0/udp/6746/quic",
 			"/ip4/" + publicIp + "/tcp/6745",
 		},
 		AnnounceAddrs: []string{
