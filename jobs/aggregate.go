@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/application-research/edge-ur/core"
@@ -12,18 +11,14 @@ import (
 )
 
 type BucketAggregator struct {
-	Force   bool         `json:"force"`
-	Content core.Content `json:"content"`
-	File    io.Reader    `json:"file"`
+	Bucket core.Bucket
 	Processor
 }
 
-func NewBucketAggregator(ln *core.LightNode, contentToProcess core.Content, fileNode io.Reader, force bool) IProcessor {
+func NewBucketAggregator(ln *core.LightNode, bucket core.Bucket) IProcessor {
 	return &BucketAggregator{
-		force,
-		contentToProcess,
-		fileNode,
-		Processor{
+		Bucket: bucket,
+		Processor: Processor{
 			LightNode: ln,
 		},
 	}
@@ -37,59 +32,54 @@ func (r *BucketAggregator) Info() error {
 func (r *BucketAggregator) Run() error {
 	// check if there are open bucket. if there are, generate the car file for the bucket.
 
-	var buckets []core.Bucket
-	r.LightNode.DB.Model(&core.Bucket{}).Where("status = ?", "open").Find(&buckets)
+	//var buckets []core.Bucket
+	//r.LightNode.DB.Model(&core.Bucket{}).Where("status = ?", "open").Find(&buckets)
 
 	// for each bucket, get all the contents and check if the total size is greater than the aggregate size limit (default 1GB)
 	// if it is, generate a car file for the bucket and update the bucket status to processing
-	for _, bucket := range buckets {
-		var content []core.Content
-		// get all open buckets and process
-		query := "bucket_uuid = ?"
-		if r.LightNode.Config.Common.AggregatePerApiKey && r.Content.RequestingApiKey != "" {
-			query += " AND requesting_api_key = ?"
-			r.LightNode.DB.Model(&core.Content{}).Where(query, bucket.Uuid, r.Content.RequestingApiKey).Find(&content)
-		} else {
-			r.LightNode.DB.Model(&core.Content{}).Where(query, bucket.Uuid).Find(&content)
-		}
-		var totalSize int64
-		var aggContent []core.Content
-		for _, c := range content {
-			totalSize += c.Size
-			aggContent = append(aggContent, c)
-		}
+	//for _, bucket := range buckets {
+	var content []core.Content
+	// get all open buckets and process
+	query := "bucket_uuid = ?"
+	r.LightNode.DB.Model(&core.Content{}).Where(query, r.Bucket.Uuid).Find(&content)
 
-		// get bucket policy
-		var policy core.Policy
-		r.LightNode.DB.Model(&core.Policy{}).Where("id = ?", bucket.PolicyId).First(&policy)
-
-		if policy.ID == 0 {
-			// create a default policy
-			newPolicy := core.Policy{
-				Name:       bucket.Name,
-				BucketSize: r.LightNode.Config.Common.BucketAggregateSize,
-				SplitSize:  r.LightNode.Config.Common.SplitSize,
-				CreatedAt:  time.Now(),
-				UpdatedAt:  time.Now(),
-			}
-			r.LightNode.DB.Save(&newPolicy)
-			bucket.PolicyId = newPolicy.ID
-			policy = newPolicy
-		}
-
-		if totalSize > policy.BucketSize && len(content) > 1 {
-			fmt.Println("Generating car file for bucket: ", bucket.Uuid)
-			bucket.Status = "processing"
-			r.LightNode.DB.Save(&bucket)
-
-			// process the car generator
-			job := CreateNewDispatcher()
-			genCar := NewBucketCarGenerator(r.LightNode, bucket)
-			job.AddJob(genCar)
-			job.Start(1)
-			continue
-		}
+	var totalSize int64
+	var aggContent []core.Content
+	for _, c := range content {
+		totalSize += c.Size
+		aggContent = append(aggContent, c)
 	}
+
+	// get bucket policy
+	var policy core.Policy
+	r.LightNode.DB.Model(&core.Policy{}).Where("id = ?", r.Bucket.PolicyId).Find(&policy)
+
+	if policy.ID == 0 {
+		// create a default policy
+		newPolicy := core.Policy{
+			Name:       r.Bucket.Name,
+			BucketSize: r.LightNode.Config.Common.BucketAggregateSize,
+			SplitSize:  r.LightNode.Config.Common.SplitSize,
+			CreatedAt:  time.Now(),
+			UpdatedAt:  time.Now(),
+		}
+		r.LightNode.DB.Save(&newPolicy)
+		r.Bucket.PolicyId = newPolicy.ID
+		policy = newPolicy
+	}
+
+	if totalSize > policy.BucketSize && len(content) > 1 {
+		fmt.Println("Generating car file for bucket: ", r.Bucket.Uuid)
+		r.Bucket.Status = "processing"
+		r.LightNode.DB.Save(&r.Bucket)
+
+		// process the car generator
+		job := CreateNewDispatcher()
+		genCar := NewBucketCarGenerator(r.LightNode, r.Bucket)
+		job.AddJob(genCar)
+		job.Start(1)
+	}
+	//}
 
 	return nil
 	//	panic("implement me")

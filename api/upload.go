@@ -169,13 +169,8 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		} else {
 			var bucket core.Bucket
 
-			if node.Config.Common.AggregatePerApiKey {
-				rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ? and requesting_api_key = ?"
-				node.DB.Raw(rawQuery, "open", collectionName, authParts[1]).First(&bucket)
-			} else {
-				rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ?"
-				node.DB.Raw(rawQuery, "open", collectionName).First(&bucket)
-			}
+			rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ?"
+			node.DB.Raw(rawQuery, "open", collectionName).First(&bucket)
 
 			if bucket.ID == 0 {
 				// create a new bucket
@@ -214,11 +209,10 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 
 			node.DB.Create(&newContent)
 
-			//if makeDeal == "true" {
+			// bucket aggregator
 			job := jobs.CreateNewDispatcher()
-			job.AddJob(jobs.NewBucketAggregator(node, newContent, srcR, false))
+			job.AddJob(jobs.NewBucketAggregator(node, bucket))
 			job.Start(1)
-			//}
 
 			if err != nil {
 				return c.JSON(500, UploadResponse{
@@ -343,13 +337,8 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		} else {
 			var bucket core.Bucket
 
-			if node.Config.Common.AggregatePerApiKey {
-				rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ? and requesting_api_key = ?"
-				node.DB.Raw(rawQuery, "open", collectionName, authParts[1]).First(&bucket)
-			} else {
-				rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ?"
-				node.DB.Raw(rawQuery, "open", collectionName).First(&bucket)
-			}
+			rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ?"
+			node.DB.Raw(rawQuery, "open", collectionName).First(&bucket)
 
 			if bucket.ID == 0 {
 				// create a new bucket
@@ -396,7 +385,7 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 
 			//if makeDeal == "true" {
 			job := jobs.CreateNewDispatcher()
-			job.AddJob(jobs.NewBucketAggregator(node, newContent, srcR, false))
+			job.AddJob(jobs.NewBucketAggregator(node, bucket))
 			job.Start(1)
 			//}
 
