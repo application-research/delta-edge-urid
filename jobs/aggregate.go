@@ -65,13 +65,16 @@ func (r *BucketAggregator) Run() error {
 
 		if policy.ID == 0 {
 			// create a default policy
-			policy = core.Policy{
+			newPolicy := core.Policy{
 				Name:       bucket.Name,
 				BucketSize: r.LightNode.Config.Common.BucketAggregateSize,
 				SplitSize:  r.LightNode.Config.Common.SplitSize,
 				CreatedAt:  time.Now(),
 				UpdatedAt:  time.Now(),
 			}
+			r.LightNode.DB.Save(&newPolicy)
+			bucket.PolicyId = newPolicy.ID
+			policy = newPolicy
 		}
 
 		if totalSize > policy.BucketSize && len(content) > 1 {
