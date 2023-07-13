@@ -104,7 +104,16 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		// load the policy of the tag
 		var policy core.Policy
 		node.DB.Where("name = ?", collectionName).First(&policy)
-
+		if policy.ID == 0 {
+			// create new policy
+			policy = core.Policy{
+				Name:       collectionName,
+				BucketSize: node.Config.Common.BucketAggregateSize,
+				SplitSize:  node.Config.Common.SplitSize,
+				CreatedAt:  time.Now(),
+				UpdatedAt:  time.Now(),
+			}
+		}
 		file, err := c.FormFile("data")
 		if err != nil {
 			return err
@@ -258,6 +267,17 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		// load the policy of the tag
 		var policy core.Policy
 		node.DB.Where("name = ?", collectionName).First(&policy)
+
+		if policy.ID == 0 {
+			// create new policy
+			policy = core.Policy{
+				Name:       collectionName,
+				BucketSize: node.Config.Common.BucketAggregateSize,
+				SplitSize:  node.Config.Common.SplitSize,
+				CreatedAt:  time.Now(),
+				UpdatedAt:  time.Now(),
+			}
+		}
 
 		file, err := c.FormFile("data")
 		if err != nil {

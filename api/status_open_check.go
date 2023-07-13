@@ -42,7 +42,7 @@ func ConfigureStatusOpenCheckRouter(e *echo.Group, node *core.LightNode) {
 	e.GET("/status/content/:contentId", func(c echo.Context) error {
 
 		var content core.Content
-		node.DB.Raw("select * from contents as c where id = ?", c.Param("id")).Scan(&content)
+		node.DB.Raw("select * from contents as c where id = ?", c.Param("contentId")).Scan(&content)
 		content.RequestingApiKey = ""
 
 		if content.ID == 0 {
