@@ -187,14 +187,11 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 					Status:           "open",
 					Name:             collectionName,
 					RequestingApiKey: authParts[1],
-					//DeltaNodeUrl:     DeltaUploadApi,
-					Uuid:     bucketUuid.String(),
-					PolicyId: policy.ID,
-					Size:     file.Size,
-					//Miner:            miner, // blank
-					//Tag:       tag,
-					CreatedAt: time.Now(),
-					UpdatedAt: time.Now(),
+					Uuid:             bucketUuid.String(),
+					PolicyId:         policy.ID,
+					Size:             file.Size,
+					CreatedAt:        time.Now(),
+					UpdatedAt:        time.Now(),
 				}
 				node.DB.Create(&bucket)
 			}
