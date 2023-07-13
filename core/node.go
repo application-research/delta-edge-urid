@@ -76,6 +76,7 @@ func NewEdgeNode(ctx context.Context, cfg config.EdgeConfig) (*LightNode, error)
 		},
 	}
 	fmt.Println("cfg.Node.Repo is: ", cfg.Node.Repo)
+	fmt.Println("cfg.Node.DsRepo is: ", cfg.Node.DsRepo)
 	ds, err := levelds.NewDatastore(cfg.Node.DsRepo, nil)
 	if err != nil {
 		panic(err)

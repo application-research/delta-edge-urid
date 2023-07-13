@@ -20,7 +20,7 @@ type EdgeConfig struct {
 		Type                  string `env:"NODE_TYPE"`
 		DbDsn                 string `env:"DB_DSN" envDefault:"edge-urid.db"`
 		Repo                  string `env:"REPO" envDefault:"./whypfs"`
-		DsRepo                string `env:"DS_REPO" envDefault:"./whypfs"`
+		DsRepo                string `env:"DS_REPO" envDefault:"./whypfs-ds"`
 		Port                  int    `env:"PORT" envDefault:"1414"`
 		AdminApiKey           string `env:"ADMIN_API_KEY" envDefault:"admin"`
 		DefaultCollectionName string `env:"DEFAULT_COLLECTION_NAME" envDefault:"default"`

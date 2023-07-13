@@ -3,6 +3,7 @@ package jobs
 import (
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/application-research/edge-ur/core"
 	"github.com/ipfs/go-cid"
@@ -61,6 +62,17 @@ func (r *BucketAggregator) Run() error {
 		// get bucket policy
 		var policy core.Policy
 		r.LightNode.DB.Model(&core.Policy{}).Where("id = ?", bucket.PolicyId).First(&policy)
+
+		if policy.ID == 0 {
+			// create a default policy
+			policy = core.Policy{
+				Name:       bucket.Name,
+				BucketSize: r.LightNode.Config.Common.BucketAggregateSize,
+				SplitSize:  r.LightNode.Config.Common.SplitSize,
+				CreatedAt:  time.Now(),
+				UpdatedAt:  time.Now(),
+			}
+		}
 
 		if totalSize > policy.BucketSize && len(content) > 1 {
 			fmt.Println("Generating car file for bucket: ", bucket.Uuid)

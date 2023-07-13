@@ -62,7 +62,6 @@ type LogEvent struct {
 }
 
 type Policy struct {
-	gorm.Model
 	ID         int64     `gorm:"primaryKey"`
 	Name       string    `json:"name"`
 	BucketSize int64     `json:"bucket_size"`
@@ -72,7 +71,6 @@ type Policy struct {
 }
 
 type Bucket struct {
-	gorm.Model
 	ID               int64     `gorm:"primaryKey"`
 	Uuid             string    `gorm:"index" json:"uuid"`
 	Name             string    `json:"name"`
