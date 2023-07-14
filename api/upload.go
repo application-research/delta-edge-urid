@@ -193,9 +193,11 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 				}
 				node.DB.Create(&bucket)
 			} else {
+
 				bucket.Size = bucket.Size + file.Size
 				node.DB.Save(&bucket)
 			}
+			fmt.Println("bucketUuid", bucket.Uuid, "bucket.Size", bucket.Size)
 
 			newContent := core.Content{
 				Name:             file.Filename,
@@ -214,7 +216,7 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 
 			// bucket aggregator
 			job := jobs.CreateNewDispatcher()
-			job.AddJob(jobs.NewBucketAggregator(node, bucket))
+			job.AddJob(jobs.NewBucketAggregator(node, &bucket))
 			job.Start(1)
 
 			if err != nil {
@@ -305,10 +307,6 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 		// check open bucket
 		var contentList []core.Content
 
-		//for miner := range miners {
-		fmt.Println("file.Size", file.Size)
-		fmt.Println("node.Config.Common.MaxSizeToSplit", node.Config.Common.MaxSizeToSplit)
-
 		if file.Size > node.Config.Common.MaxSizeToSplit {
 			newContent := core.Content{
 				Name:             file.Filename,
@@ -367,10 +365,11 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 				}
 				node.DB.Create(&bucket)
 			} else {
+
 				bucket.Size = bucket.Size + file.Size
 				node.DB.Save(&bucket)
 			}
-
+			fmt.Println("bucketUuid", bucket.Uuid, "bucket.Size", bucket.Size)
 			newContent := core.Content{
 				Name: file.Filename,
 				Size: file.Size,
@@ -391,7 +390,7 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 
 			//if makeDeal == "true" {
 			job := jobs.CreateNewDispatcher()
-			job.AddJob(jobs.NewBucketAggregator(node, bucket))
+			job.AddJob(jobs.NewBucketAggregator(node, &bucket))
 			job.Start(1)
 			//}
 

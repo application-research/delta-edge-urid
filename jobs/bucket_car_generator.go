@@ -63,8 +63,8 @@ func NewBucketCarGenerator(ln *core.LightNode, bucketToProcess core.Bucket) IPro
 func (r *BucketCarGenerator) GenerateCarForBucket(bucketUuid string) error {
 
 	// get the main bucket
-	var bucket core.Bucket
-	r.LightNode.DB.Model(&core.Bucket{}).Where("uuid = ?", bucketUuid).First(&bucket)
+	bucket := r.Bucket
+	//r.LightNode.DB.Model(&core.Bucket{}).Where("uuid = ?", bucketUuid).First(&bucket)
 
 	var updateContentsForAgg []core.Content
 	r.LightNode.DB.Model(&core.Content{}).Where("bucket_uuid = ?", bucketUuid).Find(&updateContentsForAgg)
@@ -100,13 +100,13 @@ func (r *BucketCarGenerator) GenerateCarForBucket(bucketUuid string) error {
 		return err
 	}
 	r.LightNode.Node.Add(context.Background(), dirNode)
-	_, err = r.LightNode.Node.AddPinFile(context.Background(), buf, nil)
+	bufDir, err := r.LightNode.Node.AddPinFile(context.Background(), buf, nil)
 	if err != nil {
 		log.Errorf("error adding file: %s", err)
 		return err
 	}
 
-	pieceCid, carSize, unpaddedPieceSize, bufFile, err := GeneratePieceCommitment(context.Background(), dirNode.Cid(), r.LightNode.Node.Blockstore)
+	pieceCid, carSize, unpaddedPieceSize, bufFile, err := GeneratePieceCommitment(context.Background(), bufDir.Cid(), r.LightNode.Node.Blockstore)
 	bufFileN, err := r.LightNode.Node.AddPinFile(context.Background(), &bufFile, nil)
 
 	if err != nil {

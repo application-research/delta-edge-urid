@@ -11,11 +11,11 @@ import (
 )
 
 type BucketAggregator struct {
-	Bucket core.Bucket
+	Bucket *core.Bucket
 	Processor
 }
 
-func NewBucketAggregator(ln *core.LightNode, bucket core.Bucket) IProcessor {
+func NewBucketAggregator(ln *core.LightNode, bucket *core.Bucket) IProcessor {
 	return &BucketAggregator{
 		Bucket: bucket,
 		Processor: Processor{
@@ -39,21 +39,18 @@ func (r *BucketAggregator) Run() error {
 	// if it is, generate a car file for the bucket and update the bucket status to processing
 	//for _, bucket := range buckets {
 	var content []core.Content
-	// get all open buckets and process
 	query := "bucket_uuid = ?"
 	r.LightNode.DB.Model(&core.Content{}).Where(query, r.Bucket.Uuid).Find(&content)
 
+	// get total size of the bucket
 	var totalSize int64
-	var aggContent []core.Content
-	for _, c := range content {
-		totalSize += c.Size
-		aggContent = append(aggContent, c)
-	}
+	r.LightNode.DB.Model(&core.Content{}).Where(query, r.Bucket.Uuid).Select("sum(size) as size").Scan(&totalSize)
 
 	// get bucket policy
 	var policy core.Policy
 	r.LightNode.DB.Model(&core.Policy{}).Where("id = ?", r.Bucket.PolicyId).Find(&policy)
 
+	// if policy is not set, create a default policy
 	if policy.ID == 0 {
 		// create a default policy
 		newPolicy := core.Policy{
@@ -68,21 +65,22 @@ func (r *BucketAggregator) Run() error {
 		policy = newPolicy
 	}
 
-	if totalSize > policy.BucketSize && len(content) > 1 {
+	// check if total size is greater than the bucket size
+	fmt.Println("Total size: ", totalSize, " Policy Bucket size: ", policy.BucketSize)
+	if totalSize > policy.BucketSize {
 		fmt.Println("Generating car file for bucket: ", r.Bucket.Uuid)
 		r.Bucket.Status = "processing"
 		r.LightNode.DB.Save(&r.Bucket)
 
 		// process the car generator
 		job := CreateNewDispatcher()
-		genCar := NewBucketCarGenerator(r.LightNode, r.Bucket)
+		genCar := NewBucketCarGenerator(r.LightNode, *r.Bucket)
 		job.AddJob(genCar)
 		job.Start(1)
 	}
-	//}
 
 	return nil
-	//	panic("implement me")
+
 }
 
 // GetCidBuilderDefault is a helper function that returns a default cid builder
