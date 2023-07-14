@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine
+FROM golang:1.19-alpine
 RUN apk add build-base
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN go build -tags netgo -ldflags '-s -w' -o edge
+RUN go build -tags netgo -ldflags '-s -w' -o edgeurid
 
-CMD [ "./edge daemon" ]
+CMD [ "./edgeurid daemon" ]
 EXPOSE 1313
