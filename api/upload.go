@@ -192,6 +192,9 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 					UpdatedAt:        time.Now(),
 				}
 				node.DB.Create(&bucket)
+			} else {
+				bucket.Size = bucket.Size + file.Size
+				node.DB.Save(&bucket)
 			}
 
 			newContent := core.Content{
@@ -363,6 +366,9 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 					UpdatedAt: time.Now(),
 				}
 				node.DB.Create(&bucket)
+			} else {
+				bucket.Size = bucket.Size + file.Size
+				node.DB.Save(&bucket)
 			}
 
 			newContent := core.Content{
