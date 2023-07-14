@@ -27,7 +27,7 @@ type EdgeConfig struct {
 	}
 
 	Common struct {
-		BucketAggregateSize        int64 `env:"BUCKET_AGGREGATE_SIZE" envDefault:"100000"`
+		BucketAggregateSize        int64 `env:"BUCKET_AGGREGATE_SIZE" envDefault:"4048576000"`
 		MaxSizeToSplit             int64 `env:"MAX_SIZE_TO_SPLIT" envDefault:"32000000000"`
 		SplitSize                  int64 `env:"SPLIT_SIZE" envDefault:"5048576000"`
 		DealCheck                  int   `env:"DEAL_CHECK" envDefault:"600"`
