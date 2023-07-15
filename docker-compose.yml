@@ -12,4 +12,4 @@ services:
     environment:
       - NODE_NAME=${NODE_NAME:-"edge-node"}
       - DELTA_NODE_API=${DELTA_NODE_API:-"http://localhost:1414"}
-      - DEAL_CHECK=600
+      - PORT=1313

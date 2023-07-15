@@ -9,24 +9,25 @@ import (
 )
 
 type BucketsResponse struct {
-	BucketUUID     string    `json:"bucket_uuid"`
-	PieceCid       string    `json:"piece_cid"`
-	PayloadCid     string    `json:"payload_cid"`
-	DirCid         string    `json:"dir_cid"`
-	PieceSize      int64     `json:"piece_size"`
-	DownloadUrl    string    `json:"download_url"`
-	CollectionName string    `json:"collection_name"`
-	Status         string    `json:"status"`
-	Size           int64     `json:"size"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	BucketUUID     string         `json:"bucket_uuid"`
+	PieceCid       string         `json:"piece_cid"`
+	PayloadCid     string         `json:"payload_cid"`
+	DirCid         string         `json:"dir_cid"`
+	PieceSize      int64          `json:"piece_size"`
+	DownloadUrl    string         `json:"download_url"`
+	CollectionName string         `json:"collection_name"`
+	Status         string         `json:"status"`
+	Size           int64          `json:"size"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	Contents       []core.Content `json:"contents"`
 }
 
 func ConfigureBucketsRouter(e *echo.Group, node *core.LightNode) {
 	//var DeltaUploadApi = node.Config.Delta.ApiUrl
 	buckets := e.Group("/buckets")
 	buckets.GET("/get/open", handleGetOpenBuckets(node))
-	//buckets.GET("/get/collections", handleGetCollections(node))
+	buckets.GET("/get/in-progress", handleGetInProgressBuckets(node))
 	buckets.POST("/create", handleCreateBucket(node))
 	buckets.DELETE("/:uuid", handleDeleteBucket(node))
 
@@ -38,6 +39,42 @@ type CreateBucketRequest struct {
 	SplitSize  int64  `json:"split_size"`  // if its more than 0
 }
 
+func handleGetInProgressBuckets(node *core.LightNode) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		var buckets []core.Bucket
+		node.DB.Model(&core.Bucket{}).Where("status in (?,?)", "processing", "open").Find(&buckets)
+
+		var bucketsResponse []BucketsResponse
+		for _, bucket := range buckets {
+			bucketsResponse = append(bucketsResponse, BucketsResponse{
+				BucketUUID:     bucket.Uuid,
+				PieceCid:       bucket.PieceCid,
+				PieceSize:      bucket.PieceSize,
+				PayloadCid:     bucket.Cid,
+				DirCid:         bucket.DirCid,
+				DownloadUrl:    "/gw/" + bucket.Cid,
+				Status:         bucket.Status,
+				CollectionName: bucket.Name,
+				Size:           bucket.Size,
+				CreatedAt:      bucket.CreatedAt,
+				UpdatedAt:      bucket.UpdatedAt,
+			})
+
+			// get all the content
+			var contents []core.Content
+			node.DB.Model(&core.Content{}).Where("bucket_uuid = ?", bucket.Uuid).Find(&contents)
+			bucketsResponse[len(bucketsResponse)-1].Contents = contents
+		}
+
+		if len(bucketsResponse) == 0 {
+			return c.JSON(404, map[string]interface{}{
+				"message":     "No open buckets found.",
+				"description": "This means that there are no buckets that are ready for deal making.",
+			})
+		}
+		return c.JSON(200, bucketsResponse)
+	}
+}
 func handleCreateBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
@@ -138,6 +175,11 @@ func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 				CreatedAt:      bucket.CreatedAt,
 				UpdatedAt:      bucket.UpdatedAt,
 			})
+
+			// get all the content
+			var contents []core.Content
+			node.DB.Model(&core.Content{}).Where("bucket_uuid = ?", bucket.Uuid).Find(&contents)
+			bucketsResponse[len(bucketsResponse)-1].Contents = contents
 		}
 
 		if len(bucketsResponse) == 0 {
