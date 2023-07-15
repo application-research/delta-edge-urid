@@ -92,21 +92,20 @@ func (r *BucketCarGenerator) GenerateCarForBucket(bucketUuid string) error {
 		}
 
 		//aggReaders = append(aggReaders, cDataAgg)
-		dir.AddChild(context.Background(), cAgg.Name, cDataAgg)
+		dir.AddChild(context.Background(), cAgg.Cid, cDataAgg)
 	}
 	dirNode, err := dir.GetNode()
 	if err != nil {
 		log.Errorf("error getting directory node: %s", err)
 		return err
 	}
-	r.LightNode.Node.Add(context.Background(), dirNode)
-	bufDir, err := r.LightNode.Node.AddPinFile(context.Background(), buf, nil)
+	r.LightNode.Node.Blockstore.Put(context.Background(), dirNode)
 	if err != nil {
 		log.Errorf("error adding file: %s", err)
 		return err
 	}
 
-	pieceCid, carSize, unpaddedPieceSize, bufFile, err := GeneratePieceCommitment(context.Background(), bufDir.Cid(), r.LightNode.Node.Blockstore)
+	pieceCid, carSize, unpaddedPieceSize, bufFile, err := GeneratePieceCommitment(context.Background(), dirNode.Cid(), r.LightNode.Node.Blockstore)
 	bufFileN, err := r.LightNode.Node.AddPinFile(context.Background(), &bufFile, nil)
 
 	if err != nil {
