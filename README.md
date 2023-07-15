@@ -1,5 +1,11 @@
 # Edge-URID Node
+
+![go build](https://github.com/application-research/delta-edge-urid/actions/workflows/go.yml/badge.svg)
+![code ql](https://github.com/application-research/delta-edge-urid/actions/workflows/codeql.yml/badge.svg)
+
+
 ![image](https://github.com/application-research/delta-edge/assets/4479171/73b8ed29-1914-4a24-9210-713233fd626f)
+
 
 ## Quick start
 ### Set up the .env file
