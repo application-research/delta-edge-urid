@@ -66,7 +66,7 @@ func (r *SplitterProcessor) Run() error {
 			panic(err)
 		}
 		newContent := core.Content{
-			Name: string(i) + "split-" + bNd.Cid().String(),
+			Name: string(rune(i)) + "split-" + bNd.Cid().String(),
 			Size: int64(len(b)),
 			Cid:  bNd.Cid().String(),
 			//DeltaNodeUrl:     r.Content.DeltaNodeUrl,

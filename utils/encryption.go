@@ -67,7 +67,7 @@ func EncryptWithAES(dek []byte, filePath string, encryptedFilePath string) error
 		}
 
 		// Decrypt file
-		cipherText := gcm.Seal(nonce, nonce, buffer[:bytesread], []byte(string(ad_counter)))
+		cipherText := gcm.Seal(nonce, nonce, buffer[:bytesread], []byte(string(rune(ad_counter))))
 
 		f, err := os.OpenFile(encryptedFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
@@ -126,7 +126,7 @@ func DecryptWithAES(dek []byte, encryptedFilePath string, decryptedFilePath stri
 		encryptedMsg := buffer[:bytesread]
 		// Decrypt file
 		nonce, ciphertext := encryptedMsg[:gcm.NonceSize()], encryptedMsg[gcm.NonceSize():]
-		plainText, err := gcm.Open(nil, nonce, ciphertext, []byte(string(ad_counter)))
+		plainText, err := gcm.Open(nil, nonce, ciphertext, []byte(string(rune(ad_counter))))
 		if err != nil {
 			return err
 		}
@@ -197,7 +197,7 @@ func EncryptWithChacha20poly1305(dek []byte, filePath string, encryptedFilePath 
 
 			msg := buf[:n]
 			// Encrypt the message and append the ciphertext to the nonce.
-			encryptedMsg := aead.Seal(nonce, nonce, msg, []byte(string(ad_counter)))
+			encryptedMsg := aead.Seal(nonce, nonce, msg, []byte(string(rune(ad_counter))))
 			outfile.Write(encryptedMsg)
 			ad_counter += 1
 		}
@@ -268,7 +268,7 @@ func DecryptWithChacha20poly1305(dek []byte, encryptedFilePath string, decrypted
 			// Split nonce and ciphertext.
 			nonce, ciphertext := encryptedMsg[:aead.NonceSize()], encryptedMsg[aead.NonceSize():]
 			// Decrypt the message and check it wasn't tampered with.
-			plaintext, err := aead.Open(nil, nonce, ciphertext, []byte(string(ad_counter)))
+			plaintext, err := aead.Open(nil, nonce, ciphertext, []byte(string(rune(ad_counter))))
 			if err != nil {
 				log.Println("Error when decrypting ciphertext. May be wrong password or file is damaged.")
 				return err

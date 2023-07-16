@@ -67,7 +67,7 @@ func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 			//go runProcessors(ln)
 
 			// launch the API node
-			fmt.Println(`
+			fmt.Printf(`
  _______    ________   ________   _______                    ___  ___   ________     
 |\  ___ \  |\   ___ \ |\   ____\ |\  ___ \                  |\  \|\  \ |\   __  \    
 \ \   __/| \ \  \_|\ \\ \  \___| \ \   __/|    ____________ \ \  \\\  \\ \  \|\  \   
