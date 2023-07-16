@@ -69,7 +69,7 @@ func handleGetInProgressBuckets(node *core.LightNode) func(c echo.Context) error
 		if len(bucketsResponse) == 0 {
 			return c.JSON(404, map[string]interface{}{
 				"message":     "No open buckets found.",
-				"description": "This means that there are no buckets that are ready for deal making.",
+				"description": "This means that there are no buckets that are open and/processing.",
 			})
 		}
 		return c.JSON(200, bucketsResponse)
@@ -176,10 +176,6 @@ func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 				UpdatedAt:      bucket.UpdatedAt,
 			})
 
-			// get all the content
-			var contents []core.Content
-			node.DB.Model(&core.Content{}).Where("bucket_uuid = ?", bucket.Uuid).Find(&contents)
-			bucketsResponse[len(bucketsResponse)-1].Contents = contents
 		}
 
 		if len(bucketsResponse) == 0 {
