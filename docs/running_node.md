@@ -1,20 +1,18 @@
 # Running a node
 
-Edge is a node that can be used to make storage deals on the Filecoin network. It is a daemon that runs in the background and can be controlled using the `edge` command.
-
-Edge **REQUIRES** a running delta node to make deals. You can run a delta node locally or use a remote node.
+EdgeURID is a node that can be used to make storage deals on the Filecoin network. It is a daemon that runs in the background and can be controlled using the `edge` command.
 
 ## Install
 
 ### Clone the repo
 ``` 
-git clone https://github.com/application-research/edge-urid
+git clone https://github.com/application-research/delta-edge-urid
 ```
 
 ### build with `go build`
 ```
-cd edge-ur
-go build -tags netgo -ldflags '-s -w' -o edge
+cd delta-edge-urid
+go build -tags netgo -ldflags '-s -w' -o edgeurid
 ```
 
 ### build with `make`
@@ -26,9 +24,11 @@ make all
 Copy the `.env.example` file to `.env` and update the values as needed.
 ```
 # node information
-NODE_NAME=edge
-NODE_DESCRIPTION=Edge node
-DB_DSN=edge-urdb
+NODE_NAME=edgeurid
+NODE_DESCRIPTION=EdgeURID node
+DB_DSN=edge-urid-db
+ADMIN_API_KEY=ED_UUID_GE
+DEFAULT_COLLECTION_NAME=default
 ```
 
 ## Running
