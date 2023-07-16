@@ -7,7 +7,7 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/filecoin-project/go-address v1.1.0
 	github.com/filecoin-project/go-fil-commcid v0.1.0
-	github.com/filecoin-project/go-fil-commp-hashhash v0.1.0
+	github.com/filecoin-project/go-fil-commp-hashhash v0.2.0
 	github.com/filecoin-project/go-fil-markets v1.28.3
 	github.com/filecoin-project/go-state-types v0.11.1
 	github.com/filecoin-project/lotus v1.23.3-0.20230630190146-017f20c346a5
@@ -15,13 +15,14 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/ipfs/boxo v0.10.2
 	github.com/ipfs/go-cid v0.4.1
-	github.com/ipfs/go-datastore v0.6.0
+	github.com/ipfs/go-ds-leveldb v0.5.0
 	github.com/ipfs/go-ipfs-blockstore v1.3.0
 	github.com/ipfs/go-ipld-format v0.5.0
 	github.com/ipfs/go-log/v2 v2.5.1
 	github.com/ipfs/go-merkledag v0.11.0
 	github.com/ipfs/go-path v0.3.1
 	github.com/ipfs/go-unixfs v0.4.5
+	github.com/ipfs/go-unixfsnode v1.7.2-0.20230628085008-364a5496925b
 	github.com/ipld/go-car v0.6.1
 	github.com/ipld/go-codec-dagpb v1.6.0
 	github.com/ipld/go-ipld-prime v0.20.0
@@ -113,8 +114,8 @@ require (
 	github.com/ipfs/go-block-format v0.1.2 // indirect
 	github.com/ipfs/go-blockservice v0.5.1 // indirect
 	github.com/ipfs/go-cidutil v0.1.0 // indirect
+	github.com/ipfs/go-datastore v0.6.0 // indirect
 	github.com/ipfs/go-ds-flatfs v0.5.1 // indirect
-	github.com/ipfs/go-ds-leveldb v0.5.0 // indirect
 	github.com/ipfs/go-fetcher v1.6.1 // indirect
 	github.com/ipfs/go-graphsync v0.14.6 // indirect
 	github.com/ipfs/go-ipfs-cmds v0.9.0 // indirect
@@ -128,7 +129,6 @@ require (
 	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-metrics-interface v0.0.1 // indirect
 	github.com/ipfs/go-peertaskqueue v0.8.1 // indirect
-	github.com/ipfs/go-unixfsnode v1.7.2-0.20230628085008-364a5496925b // indirect
 	github.com/ipfs/go-verifcid v0.0.2 // indirect
 	github.com/ipsn/go-secp256k1 v0.0.0-20180726113642-9d62b9f0bc52 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

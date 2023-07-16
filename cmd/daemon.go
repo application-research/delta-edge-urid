@@ -6,6 +6,7 @@ import (
 	"github.com/application-research/edge-ur/api"
 	"github.com/application-research/edge-ur/config"
 	"github.com/application-research/edge-ur/core"
+	"github.com/application-research/edge-ur/jobs"
 	"github.com/application-research/edge-ur/utils"
 	"github.com/urfave/cli/v2"
 	"runtime"
@@ -63,8 +64,9 @@ func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 			fmt.Println(utils.Blue + "Setting up the Edge node... Done" + utils.Reset)
 
 			core.ScanHostComputeResources(ln, cfg.Node.Repo)
+
 			//	launch the jobs
-			//go runProcessors(ln)
+			go runProcessors(ln)
 
 			// launch the API node
 			fmt.Printf(`
@@ -92,4 +94,10 @@ func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 
 	return daemonCommands
 
+}
+
+func runProcessors(ln *core.LightNode) {
+	job := jobs.CreateNewDispatcher()
+	job.AddJob(jobs.NewBucketAggregator(ln))
+	job.Start(5)
 }

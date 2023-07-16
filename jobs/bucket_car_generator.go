@@ -64,17 +64,17 @@ func (r *BucketCarGenerator) GenerateCarForBucket(bucketUuid string) error {
 
 	// get the main bucket
 	bucket := r.Bucket
-	//r.LightNode.DB.Model(&core.Bucket{}).Where("uuid = ?", bucketUuid).First(&bucket)
 
 	var updateContentsForAgg []core.Content
-	r.LightNode.DB.Model(&core.Content{}).Where("bucket_uuid = ?", bucketUuid).Find(&updateContentsForAgg)
+	r.LightNode.DB.Model(&core.Content{}).Where("bucket_uuid = ?", bucket.Uuid).Find(&updateContentsForAgg)
 
 	// for each content, generate a node and a raw
 	dir := uio.NewDirectory(r.LightNode.Node.DAGService)
 	dir.SetCidBuilder(GetCidBuilderDefault())
 	buf := new(bytes.Buffer)
+	var aggReaders []io.Reader
 	for _, cAgg := range updateContentsForAgg {
-		fmt.Println("aggregating file: ", cAgg.Cid, bucketUuid)
+		fmt.Println("aggregating file: ", cAgg.Cid, bucket.Uuid)
 		cCidAgg, err := cid.Decode(cAgg.Cid)
 		if err != nil {
 			log.Errorf("error decoding cid: %s", err)
@@ -86,27 +86,40 @@ func (r *BucketCarGenerator) GenerateCarForBucket(bucketUuid string) error {
 			return errCData
 		}
 
+		cDataAggFile, errCDataFile := r.LightNode.Node.GetFile(context.Background(), cCidAgg) // get the node
+		if errCDataFile != nil {
+			log.Errorf("error getting file: %s", errCDataFile)
+			return errCDataFile
+		}
+
 		_, err = io.Copy(buf, bytes.NewReader(cDataAgg.RawData()))
 		if err != nil {
 			panic(err)
 		}
 
-		//aggReaders = append(aggReaders, cDataAgg)
+		aggReaders = append(aggReaders, cDataAggFile)
 		dir.AddChild(context.Background(), cAgg.Cid, cDataAgg)
 	}
+
 	dirNode, err := dir.GetNode()
 	if err != nil {
 		log.Errorf("error getting directory node: %s", err)
 		return err
 	}
-	r.LightNode.Node.Blockstore.Put(context.Background(), dirNode)
+	r.LightNode.Node.Add(context.Background(), dirNode)
 	if err != nil {
 		log.Errorf("error adding file: %s", err)
 		return err
 	}
 
-	pieceCid, carSize, unpaddedPieceSize, bufFile, err := GeneratePieceCommitment(context.Background(), dirNode.Cid(), r.LightNode.Node.Blockstore)
-	bufFileN, err := r.LightNode.Node.AddPinFile(context.Background(), &bufFile, nil)
+	carBufNode, err := r.LightNode.Node.AddPinFile(context.Background(), buf, nil)
+	if err != nil {
+		log.Errorf("error adding file: %s", err)
+		return err
+	}
+
+	pieceCid, carSize, unpaddedPieceSize, _, err := GeneratePieceCommitment(context.Background(), carBufNode.Cid(), r.LightNode.Node.Blockstore)
+	//bufFileN, err := r.LightNode.Node.AddPinFile(context.Background(), &bufFile, nil)
 
 	if err != nil {
 		log.Errorf("error generating piece commitment: %s", err)
@@ -115,11 +128,16 @@ func (r *BucketCarGenerator) GenerateCarForBucket(bucketUuid string) error {
 	bucket.PieceSize = int64(unpaddedPieceSize.Padded())
 	bucket.DirCid = dirNode.Cid().String()
 	bucket.Size = int64(carSize)
-	bucket.Cid = bufFileN.Cid().String()
+	bucket.Cid = carBufNode.Cid().String()
 	bucket.Status = "ready"
 	r.LightNode.DB.Save(&bucket)
 
 	return nil
+}
+
+type CarObject struct {
+	Cid  cid.Cid
+	Size uint64
 }
 
 func GeneratePieceCommitment(ctx context.Context, payloadCid cid.Cid, bstore blockstore.Blockstore) (cid.Cid, uint64, abi.UnpaddedPieceSize, bytes.Buffer, error) {
@@ -143,7 +161,15 @@ func GeneratePieceCommitment(ctx context.Context, payloadCid cid.Cid, bstore blo
 		return cid.Undef, 0, 0, *buf, err
 	}
 
-	preparedCar, err := selectiveCar.Prepare()
+	//preparedCar, err := selectiveCar.Prepare()
+	objects := make([]CarObject, 0, 0)
+	preparedCar, err := selectiveCar.Prepare(func(block car.Block) error {
+		objects = append(objects, CarObject{
+			Cid:  block.BlockCID,
+			Size: uint64(len(block.Data)),
+		})
+		return nil
+	})
 	if err != nil {
 		return cid.Undef, 0, 0, *buf, err
 	}
@@ -167,6 +193,10 @@ func GeneratePieceCommitment(ctx context.Context, payloadCid cid.Cid, bstore blo
 	if err != nil {
 		return cid.Undef, 0, 0, *buf, err
 	}
+
+	fmt.Println("size ", size)
+	fmt.Println("padded piece size: ", abi.PaddedPieceSize(size))
+	fmt.Println("padded piece size: ", abi.PaddedPieceSize(size).Unpadded())
 
 	return commCid, preparedCar.Size(), abi.PaddedPieceSize(size).Unpadded(), *buf, nil
 }

@@ -214,11 +214,6 @@ func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c
 
 			node.DB.Create(&newContent)
 
-			// bucket aggregator
-			job := jobs.CreateNewDispatcher()
-			job.AddJob(jobs.NewBucketAggregator(node, &bucket))
-			job.Start(1)
-
 			if err != nil {
 				return c.JSON(500, UploadResponse{
 					Status:  "error",
@@ -387,12 +382,6 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 			}
 
 			node.DB.Create(&newContent)
-
-			//if makeDeal == "true" {
-			job := jobs.CreateNewDispatcher()
-			job.AddJob(jobs.NewBucketAggregator(node, &bucket))
-			job.Start(1)
-			//}
 
 			if err != nil {
 				return c.JSON(500, UploadResponse{
