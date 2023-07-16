@@ -63,6 +63,9 @@ func handleGetInProgressBuckets(node *core.LightNode) func(c echo.Context) error
 			// get all the content
 			var contents []core.Content
 			node.DB.Model(&core.Content{}).Where("bucket_uuid = ?", bucket.Uuid).Find(&contents)
+			for i := range contents {
+				contents[i].RequestingApiKey = ""
+			}
 			bucketsResponse[len(bucketsResponse)-1].Contents = contents
 		}
 
@@ -179,6 +182,9 @@ func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 			// get all the content
 			var contents []core.Content
 			node.DB.Model(&core.Content{}).Where("bucket_uuid = ?", bucket.Uuid).Find(&contents)
+			for i := range contents {
+				contents[i].RequestingApiKey = ""
+			}
 			bucketsResponse[len(bucketsResponse)-1].Contents = contents
 		}
 
