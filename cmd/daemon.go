@@ -6,6 +6,7 @@ import (
 	"github.com/application-research/edge-ur/api"
 	"github.com/application-research/edge-ur/config"
 	"github.com/application-research/edge-ur/core"
+	"github.com/application-research/edge-ur/jobs"
 	"github.com/application-research/edge-ur/utils"
 	"github.com/urfave/cli/v2"
 	"runtime"
@@ -64,7 +65,7 @@ func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 
 			core.ScanHostComputeResources(ln, cfg.Node.Repo)
 			//	launch the jobs
-			//go runProcessors(ln)
+			go rerunBucketCarGen(ln)
 
 			// launch the API node
 			fmt.Printf(`
@@ -92,4 +93,18 @@ func DaemonCmd(cfg *config.EdgeConfig) []*cli.Command {
 
 	return daemonCommands
 
+}
+
+func rerunBucketCarGen(ln *core.LightNode) {
+
+	// query db for all "processing" jobs and retry
+	var buckets []core.Bucket
+	ln.DB.Model(&core.Bucket{}).Where("status = ?", "processing").Find(&buckets)
+	dispatcher := jobs.CreateNewDispatcher()
+	var numJobs int
+	for _, bucket := range buckets {
+		numJobs += 1
+		dispatcher.AddJob(jobs.NewBucketCarGenerator(ln, bucket))
+	}
+	dispatcher.Start(numJobs)
 }
