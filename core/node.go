@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/application-research/edge-ur/config"
-	levelds "github.com/ipfs/go-ds-leveldb"
+	"github.com/ipfs/go-datastore"
+	dsync "github.com/ipfs/go-datastore/sync"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -77,7 +78,8 @@ func NewEdgeNode(ctx context.Context, cfg config.EdgeConfig) (*LightNode, error)
 	}
 	fmt.Println("cfg.Node.Repo is: ", cfg.Node.Repo)
 	fmt.Println("cfg.Node.DsRepo is: ", cfg.Node.DsRepo)
-	ds, err := levelds.NewDatastore(cfg.Node.DsRepo, nil)
+	ds := dsync.MutexWrap(datastore.NewMapDatastore())
+	//ds, err := levelds.NewDatastore(cfg.Node.DsRepo, nil)
 	if err != nil {
 		panic(err)
 	}
