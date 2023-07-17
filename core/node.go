@@ -85,9 +85,6 @@ func NewEdgeNode(ctx context.Context, cfg config.EdgeConfig) (*LightNode, error)
 		Ctx:       ctx,
 		Datastore: ds,
 		Repo:      cfg.Node.Repo,
-		Config: &whypfs.Config{
-			NoLimiter: true,
-		},
 	}
 
 	params.Config = params.ConfigurationBuilder(newConfig)
