@@ -27,7 +27,8 @@ func ConfigureBucketsRouter(e *echo.Group, node *core.LightNode) {
 	//var DeltaUploadApi = node.Config.Delta.ApiUrl
 	buckets := e.Group("/buckets")
 	buckets.GET("/get/ready", handleGetOpenBuckets(node))
-	buckets.GET("/get/open", handleGetInProgressBuckets(node))
+	buckets.GET("/get/open", handleGetOpenBuckets(node))
+	//buckets.GET("/get/open", handleGetInProgressBuckets(node))
 	buckets.GET("/get/in-progress", handleGetInProgressBuckets(node))
 	buckets.GET("/get/processing", handleGetInProgressBuckets(node))
 	buckets.POST("/create", handleCreateBucket(node))
