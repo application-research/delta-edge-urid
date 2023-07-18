@@ -2,9 +2,11 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	gocarv2 "github.com/ipld/go-car/v2"
 	"gorm.io/gorm"
 	"html/template"
 	"io"
@@ -52,6 +54,7 @@ func ConfigureGatewayRouter(e *echo.Group, node *core.LightNode) {
 
 	e.GET("/gw/ipfs/:path", GatewayResolverCheckHandlerDirectPath)
 	e.GET("/gw/:path", GatewayResolverCheckHandlerDirectPath)
+	e.GET("/gw/car/:cid", GatewayResolverCheckHandlerRawCarBytes)
 	e.GET("/gw/content/:contentId", GatewayContentResolverCheckHandler)
 	e.GET("/ipfs/:path", GatewayResolverCheckHandlerDirectPath)
 }
@@ -368,6 +371,68 @@ func GatewayResolverCheckHandlerDirectPath(c echo.Context) error {
 	}
 
 	http.ServeContent(c.Response().Writer, req, cid.String(), time.Time{}, dr)
+	return nil
+}
+
+func GatewayResolverCheckHandlerRawCarBytes(c echo.Context) error {
+	ctx := c.Request().Context()
+	p := c.Param("cid")
+	req := c.Request().Clone(c.Request().Context())
+	req.URL.Path = p
+
+	sp := strings.Split(p, "/")
+	cid, err := cid.Decode(sp[0])
+	if err != nil {
+		return err
+	}
+	nd, err := gatewayHandler.node.Get(c.Request().Context(), cid)
+	if err != nil {
+		return err
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
+	switch nd := nd.(type) {
+	case *merkledag.ProtoNode:
+		n, err := unixfs.FSNodeFromBytes(nd.Data())
+		if err != nil {
+			panic(err)
+		}
+		if n.IsDir() {
+			return ServeDir(ctx, nd, c.Response().Writer, req)
+		}
+		if n.Type() == unixfs.TSymlink {
+			return fmt.Errorf("symlinks not supported")
+		}
+	case *merkledag.RawNode:
+	default:
+		return errors.New("unknown node type")
+	}
+
+	dr, err := uio.NewDagReader(ctx, nd, gatewayHandler.node.DAGService)
+	if err != nil {
+		return err
+	}
+
+	car, err := gocarv2.NewBlockReader(dr)
+
+	var data []byte
+	for {
+		block, err := car.Next()
+		if err != nil {
+			break
+		}
+		data = append(data, block.RawData()...)
+	}
+
+	err = SniffMimeType(c.Response().Writer, dr)
+	if err != nil {
+		return err
+	}
+
+	http.ServeContent(c.Response().Writer, req, cid.String(), time.Time{}, bytes.NewReader(data))
 	return nil
 }
 
