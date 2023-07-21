@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"github.com/application-research/edge-ur/jobs"
 	"github.com/application-research/edge-ur/utils"
 	"github.com/google/uuid"
+	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car"
 	"github.com/labstack/echo/v4"
 	"io"
@@ -68,6 +70,7 @@ func ConfigureUploadRouter(e *echo.Group, node *core.LightNode) {
 	var DeltaUploadApi = node.Config.ExternalApi.DeltaSvcUrl
 	content := e.Group("/content")
 	content.POST("/add", handleUploadToCarBucket(node, DeltaUploadApi))
+	content.POST("/car-cids", handleCidsToCarBucket(node, DeltaUploadApi))
 	content.POST("/add-car", handleUploadCarToBucket(node, DeltaUploadApi))
 }
 
@@ -77,6 +80,182 @@ type SignedUrlRequest struct {
 	ExpirationTimestamp time.Time `json:"expiration_timestamp"`
 	EdgeContentId       int64     `json:"edge_content_id"`
 	Signature           string    `json:"signature"`
+}
+
+func handleCidsToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		authorizationString := c.Request().Header.Get("Authorization")
+		authParts := strings.Split(authorizationString, " ")
+		cidBodyReq := CidRequest{}
+		c.Bind(&cidBodyReq)
+		collectionName := c.FormValue("collection_name")
+
+		// Check capacity if needed
+		if node.Config.Common.CapacityLimitPerKeyInBytes > 0 {
+			if err := validateCapacityLimit(node, authParts[1]); err != nil {
+				return c.JSON(500, UploadResponse{
+					Status:  "error",
+					Message: err.Error(),
+				})
+			}
+		}
+
+		// check if tag exists, if it does, get the ID
+		fmt.Println(collectionName)
+		if collectionName == "" {
+			collectionName = node.Config.Node.DefaultCollectionName
+		}
+
+		// load the policy of the tag
+		var policy core.Policy
+		node.DB.Where("name = ?", collectionName).First(&policy)
+		if policy.ID == 0 {
+			// create new policy
+			newPolicy := core.Policy{
+				Name:       collectionName,
+				BucketSize: node.Config.Common.BucketAggregateSize,
+				SplitSize:  node.Config.Common.SplitSize,
+				CreatedAt:  time.Now(),
+				UpdatedAt:  time.Now(),
+			}
+			node.DB.Create(&newPolicy)
+			policy = newPolicy
+		}
+
+		// check open bucket
+		var contentList []core.Content
+
+		for _, cidItem := range cidBodyReq.Cids {
+			cidDc, err := cid.Decode(cidItem)
+			if err != nil {
+				return c.JSON(500, UploadResponse{
+					Status:  "error",
+					Message: "Error decoding the CID",
+				})
+			}
+
+			nodeToGet, err := node.Node.Get(c.Request().Context(), cidDc)
+			if err != nil {
+				return c.JSON(500, UploadResponse{
+					Status:  "error",
+					Message: "Error adding the file to IPFS",
+				})
+			}
+
+			nodeFileSize, errS := nodeToGet.Size()
+			if errS != nil {
+				return c.JSON(500, UploadResponse{
+					Status:  "error",
+					Message: "Error getting the file size",
+				})
+			}
+			nodeFileName := nodeToGet.Cid().String()
+			nodeRaw := nodeToGet.RawData()
+			nodeRawRead := bytes.NewReader(nodeRaw)
+
+			if int64(nodeFileSize) > node.Config.Common.MaxSizeToSplit {
+				newContent := core.Content{
+					Name:             nodeFileName,
+					Size:             int64(nodeFileSize),
+					Cid:              nodeToGet.Cid().String(),
+					CollectionName:   collectionName,
+					RequestingApiKey: authParts[1],
+					Status:           utils.STATUS_PINNED,
+					MakeDeal:         true,
+					CreatedAt:        time.Now(),
+					UpdatedAt:        time.Now(),
+				}
+
+				node.DB.Create(&newContent)
+
+				// split the file and use the same tag policies
+				job := jobs.CreateNewDispatcher()
+				job.AddJob(jobs.NewSplitterProcessor(node, newContent, nodeRawRead))
+				job.Start(1)
+
+				if err != nil {
+					return c.JSON(500, UploadResponse{
+						Status:  "error",
+						Message: "Error pinning the file" + err.Error(),
+					})
+				}
+				newContent.RequestingApiKey = ""
+				contentList = append(contentList, newContent)
+			} else {
+				var bucket core.Bucket
+
+				rawQuery := "SELECT * FROM buckets WHERE status = ? and name = ?"
+				node.DB.Raw(rawQuery, "open", collectionName).First(&bucket)
+
+				if bucket.ID == 0 {
+					// create a new bucket
+					bucketUuid, errUuid := uuid.NewUUID()
+					if errUuid != nil {
+						return c.JSON(500, UploadResponse{
+							Status:  "error",
+							Message: "Error creating bucket",
+						})
+					}
+					bucket = core.Bucket{
+						Status:           "open",
+						Name:             collectionName,
+						RequestingApiKey: authParts[1],
+						Uuid:             bucketUuid.String(),
+						PolicyId:         policy.ID,
+						Size:             int64(nodeFileSize),
+						CreatedAt:        time.Now(),
+						UpdatedAt:        time.Now(),
+					}
+					node.DB.Create(&bucket)
+				} else {
+
+					bucket.Size = bucket.Size + int64(nodeFileSize)
+					node.DB.Save(&bucket)
+				}
+				fmt.Println("bucketUuid", bucket.Uuid, "bucket.Size", bucket.Size)
+
+				newContent := core.Content{
+					Name:             nodeFileName,
+					Size:             int64(nodeFileSize),
+					Cid:              nodeToGet.Cid().String(),
+					RequestingApiKey: authParts[1],
+					Status:           utils.STATUS_PINNED,
+					CollectionName:   collectionName,
+					BucketUuid:       bucket.Uuid,
+					MakeDeal:         true,
+					CreatedAt:        time.Now(),
+					UpdatedAt:        time.Now(),
+				}
+
+				node.DB.Create(&newContent)
+
+				// bucket aggregator
+				job := jobs.CreateNewDispatcher()
+				job.AddJob(jobs.NewBucketAggregator(node, &bucket))
+				job.Start(1)
+
+				if err != nil {
+					return c.JSON(500, UploadResponse{
+						Status:  "error",
+						Message: "Error pinning the file" + err.Error(),
+					})
+				}
+				newContent.RequestingApiKey = ""
+				contentList = append(contentList, newContent)
+			}
+			//}
+		}
+
+		return c.JSON(200, struct {
+			Status   string         `json:"status"`
+			Message  string         `json:"message"`
+			Contents []core.Content `json:"contents"`
+		}{
+			Status:   "success",
+			Message:  "File uploaded and pinned successfully. Please take note of the ids.",
+			Contents: contentList,
+		})
+	}
 }
 
 func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {

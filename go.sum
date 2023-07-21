@@ -66,6 +66,8 @@ github.com/application-research/whypfs-core v0.2.1-0.20230717035739-8c948071a56a
 github.com/application-research/whypfs-core v0.2.1-0.20230717035739-8c948071a56a/go.mod h1:AdygMhKAQq3f4TSgNEYhTStzHVKqr438fk9EL4s/yco=
 github.com/application-research/whypfs-core v0.2.1-0.20230717143038-83fd7072840e h1:uO22LV4YuSiA56x2Nv7GlCiURfRlvmutd/4VnzaEi3Y=
 github.com/application-research/whypfs-core v0.2.1-0.20230717143038-83fd7072840e/go.mod h1:AdygMhKAQq3f4TSgNEYhTStzHVKqr438fk9EL4s/yco=
+github.com/application-research/whypfs-core v0.2.1 h1:K5eqLVk6ssprob1IKaRFyeicHzqJgGMp4V7+RPeWcsI=
+github.com/application-research/whypfs-core v0.2.1/go.mod h1:AdygMhKAQq3f4TSgNEYhTStzHVKqr438fk9EL4s/yco=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
