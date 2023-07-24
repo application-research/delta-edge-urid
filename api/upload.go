@@ -57,6 +57,14 @@ type UploadSplitResponse struct {
 	Splits        []core.UploadSplits `json:"splits,omitempty"`
 }
 
+type PinResponse struct {
+	Status     string `json:"status"`
+	Message    string `json:"message"`
+	ID         int64  `json:"id,omitempty"`
+	Cid        string `json:"cid,omitempty"`
+	ContentUrl string `json:"content_url,omitempty"`
+}
+
 type UploadResponse struct {
 	Status       string      `json:"status"`
 	Message      string      `json:"message"`
@@ -69,8 +77,11 @@ type UploadResponse struct {
 func ConfigureUploadRouter(e *echo.Group, node *core.LightNode) {
 	var DeltaUploadApi = node.Config.ExternalApi.DeltaSvcUrl
 	content := e.Group("/content")
-	content.POST("/add", handleUploadToCarBucket(node, DeltaUploadApi))
-	content.POST("/car-cids", handleCidsToCarBucket(node, DeltaUploadApi))
+	content.POST("/add", handleUploadToCarBucket(node))
+	content.POST("/upload", handleUploadToCarBucket(node))
+	content.POST("/pin", handlePin(node))
+	content.POST("/fetch-cids", handleFetchCids(node))
+	content.POST("/car-cids", handleCidsToCarBucket(node))
 	content.POST("/add-car", handleUploadCarToBucket(node, DeltaUploadApi))
 }
 
@@ -82,7 +93,70 @@ type SignedUrlRequest struct {
 	Signature           string    `json:"signature"`
 }
 
-func handleCidsToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
+func handlePin(node *core.LightNode) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		file, err := c.FormFile("data")
+		if err != nil {
+			return err
+		}
+		src, err := file.Open()
+		if err != nil {
+			return err
+		}
+
+		addNode, err := node.Node.AddPinFile(c.Request().Context(), src, nil)
+		if err != nil {
+			return c.JSON(500, UploadResponse{
+				Status:  "error",
+				Message: "Error adding the file to IPFS",
+			})
+		}
+		cid := addNode.Cid().String()
+		return c.JSON(200, UploadResponse{
+			Status:     "success",
+			Cid:        cid,
+			ContentUrl: "/gw/" + cid,
+			Message:    "File pinned successfully",
+		})
+	}
+}
+func handleFetchCids(node *core.LightNode) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		cidBodyReq := CidRequest{}
+		c.Bind(&cidBodyReq)
+
+		type PinCidsResponse struct {
+			Cid     string `json:"cid"`
+			Status  string `json:"status"`
+			Message string `json:"message"`
+		}
+		var pinCidsResponse []PinCidsResponse
+		for _, cidItem := range cidBodyReq.Cids {
+			cidDc, err := cid.Decode(cidItem)
+			pinCidsResponseItem := PinCidsResponse{
+				Cid: cidItem,
+			}
+			if err != nil {
+				pinCidsResponseItem.Status = "error"
+				pinCidsResponseItem.Message = "Error decoding the CID"
+				pinCidsResponse = append(pinCidsResponse, pinCidsResponseItem)
+				continue
+			}
+
+			_, errGet := node.Node.Get(c.Request().Context(), cidDc)
+			if errGet != nil {
+				pinCidsResponseItem.Status = "error"
+				pinCidsResponseItem.Message = "Error fetching the CID"
+				pinCidsResponse = append(pinCidsResponse, pinCidsResponseItem)
+				continue
+			}
+			pinCidsResponseItem.Status = "success"
+			pinCidsResponseItem.Message = "CID successfully fetched and pinned"
+		}
+		return c.JSON(200, pinCidsResponse)
+	}
+}
+func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
@@ -124,7 +198,7 @@ func handleCidsToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c e
 
 		// check open bucket
 		var contentList []core.Content
-
+		job := jobs.CreateNewDispatcher()
 		for _, cidItem := range cidBodyReq.Cids {
 			time.Sleep(5 * time.Second)
 			cidDc, err := cid.Decode(cidItem)
@@ -170,9 +244,7 @@ func handleCidsToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c e
 				node.DB.Create(&newContent)
 
 				// split the file and use the same tag policies
-				job := jobs.CreateNewDispatcher()
 				job.AddJob(jobs.NewSplitterProcessor(node, newContent, nodeRawRead))
-				job.Start(1)
 
 				if err != nil {
 					return c.JSON(500, UploadResponse{
@@ -231,9 +303,8 @@ func handleCidsToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c e
 				node.DB.Create(&newContent)
 
 				// bucket aggregator
-				job := jobs.CreateNewDispatcher()
+
 				job.AddJob(jobs.NewBucketAggregator(node, &bucket))
-				job.Start(1)
 
 				if err != nil {
 					return c.JSON(500, UploadResponse{
@@ -247,6 +318,8 @@ func handleCidsToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c e
 			//}
 		}
 
+		job.Start(len(cidBodyReq.Cids))
+
 		return c.JSON(200, struct {
 			Status   string         `json:"status"`
 			Message  string         `json:"message"`
@@ -258,8 +331,7 @@ func handleCidsToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c e
 		})
 	}
 }
-
-func handleUploadToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
+func handleUploadToCarBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
