@@ -200,7 +200,7 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 		var contentList []core.Content
 		job := jobs.CreateNewDispatcher()
 		for _, cidItem := range cidBodyReq.Cids {
-			time.Sleep(5 * time.Second)
+			time.Sleep(10 * time.Second)
 			cidDc, err := cid.Decode(cidItem)
 			if err != nil {
 				return c.JSON(500, UploadResponse{
@@ -209,30 +209,29 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 				})
 			}
 
-			nodeToGet, err := node.Node.Get(c.Request().Context(), cidDc)
+			nodeToGet, err := node.Node.GetFile(c.Request().Context(), cidDc)
 			if err != nil {
 				return c.JSON(500, UploadResponse{
 					Status:  "error",
 					Message: "Error adding the file to IPFS",
 				})
 			}
-
-			nodeFileSize, errS := nodeToGet.Size()
+			var nodeW bytes.Buffer
+			_, errS := io.Copy(&nodeW, nodeToGet)
 			if errS != nil {
 				return c.JSON(500, UploadResponse{
 					Status:  "error",
 					Message: "Error getting the file size",
 				})
 			}
-			nodeFileName := nodeToGet.Cid().String()
-			nodeRaw := nodeToGet.RawData()
-			nodeRawRead := bytes.NewReader(nodeRaw)
+
+			nodeFileSize := nodeW.Len()
 
 			if int64(nodeFileSize) > node.Config.Common.MaxSizeToSplit {
 				newContent := core.Content{
-					Name:             nodeFileName,
+					Name:             cidDc.String(),
 					Size:             int64(nodeFileSize),
-					Cid:              nodeToGet.Cid().String(),
+					Cid:              cidDc.String(),
 					CollectionName:   collectionName,
 					RequestingApiKey: authParts[1],
 					Status:           utils.STATUS_PINNED,
@@ -244,7 +243,7 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 				node.DB.Create(&newContent)
 
 				// split the file and use the same tag policies
-				job.AddJob(jobs.NewSplitterProcessor(node, newContent, nodeRawRead))
+				job.AddJob(jobs.NewSplitterProcessor(node, newContent, nodeToGet))
 				job.Start(1)
 				if err != nil {
 					return c.JSON(500, UploadResponse{
@@ -288,9 +287,9 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 				fmt.Println("bucketUuid", bucket.Uuid, "bucket.Size", bucket.Size)
 
 				newContent := core.Content{
-					Name:             nodeFileName,
+					Name:             cidDc.String(),
 					Size:             int64(nodeFileSize),
-					Cid:              nodeToGet.Cid().String(),
+					Cid:              cidDc.String(),
 					RequestingApiKey: authParts[1],
 					Status:           utils.STATUS_PINNED,
 					CollectionName:   collectionName,
