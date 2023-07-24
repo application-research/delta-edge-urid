@@ -245,7 +245,7 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 
 				// split the file and use the same tag policies
 				job.AddJob(jobs.NewSplitterProcessor(node, newContent, nodeRawRead))
-
+				job.Start(1)
 				if err != nil {
 					return c.JSON(500, UploadResponse{
 						Status:  "error",
@@ -305,7 +305,7 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 				// bucket aggregator
 
 				job.AddJob(jobs.NewBucketAggregator(node, &bucket))
-
+				job.Start(1)
 				if err != nil {
 					return c.JSON(500, UploadResponse{
 						Status:  "error",
@@ -318,7 +318,7 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 			//}
 		}
 
-		job.Start(len(cidBodyReq.Cids))
+		//job.Start(len(cidBodyReq.Cids))
 
 		return c.JSON(200, struct {
 			Status   string         `json:"status"`
