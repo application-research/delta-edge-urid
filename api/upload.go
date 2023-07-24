@@ -200,7 +200,7 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 		var contentList []core.Content
 		job := jobs.CreateNewDispatcher()
 		for _, cidItem := range cidBodyReq.Cids {
-			time.Sleep(10 * time.Second)
+			time.Sleep(5 * time.Second)
 			cidDc, err := cid.Decode(cidItem)
 			if err != nil {
 				return c.JSON(500, UploadResponse{
