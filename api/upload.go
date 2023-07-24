@@ -126,6 +126,7 @@ func handleCidsToCarBucket(node *core.LightNode, DeltaUploadApi string) func(c e
 		var contentList []core.Content
 
 		for _, cidItem := range cidBodyReq.Cids {
+			time.Sleep(5 * time.Second)
 			cidDc, err := cid.Decode(cidItem)
 			if err != nil {
 				return c.JSON(500, UploadResponse{
