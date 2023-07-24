@@ -198,7 +198,7 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 
 		// check open bucket
 		var contentList []core.Content
-
+		job := jobs.CreateNewDispatcher()
 		for _, cidItem := range cidBodyReq.Cids {
 			cidDc, err := cid.Decode(cidItem)
 			if err != nil {
@@ -243,9 +243,7 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 				node.DB.Create(&newContent)
 
 				// split the file and use the same tag policies
-				job := jobs.CreateNewDispatcher()
 				job.AddJob(jobs.NewSplitterProcessor(node, newContent, nodeRawRead))
-				job.Start(1)
 
 				if err != nil {
 					return c.JSON(500, UploadResponse{
@@ -304,9 +302,8 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 				node.DB.Create(&newContent)
 
 				// bucket aggregator
-				job := jobs.CreateNewDispatcher()
+
 				job.AddJob(jobs.NewBucketAggregator(node, &bucket))
-				job.Start(1)
 
 				if err != nil {
 					return c.JSON(500, UploadResponse{
@@ -319,6 +316,8 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 			}
 			//}
 		}
+
+		job.Start(len(cidBodyReq.Cids))
 
 		return c.JSON(200, struct {
 			Status   string         `json:"status"`
