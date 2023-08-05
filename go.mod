@@ -22,6 +22,7 @@ require (
 	github.com/ipfs/go-merkledag v0.11.0
 	github.com/ipfs/go-path v0.3.1
 	github.com/ipfs/go-unixfs v0.4.5
+	github.com/ipfs/go-unixfsnode v1.7.2-0.20230628085008-364a5496925b
 	github.com/ipld/go-car v0.6.1
 	github.com/ipld/go-codec-dagpb v1.6.0
 	github.com/ipld/go-ipld-prime v0.20.0
@@ -128,7 +129,6 @@ require (
 	github.com/ipfs/go-log v1.0.5 // indirect
 	github.com/ipfs/go-metrics-interface v0.0.1 // indirect
 	github.com/ipfs/go-peertaskqueue v0.8.1 // indirect
-	github.com/ipfs/go-unixfsnode v1.7.2-0.20230628085008-364a5496925b // indirect
 	github.com/ipfs/go-verifcid v0.0.2 // indirect
 	github.com/ipsn/go-secp256k1 v0.0.0-20180726113642-9d62b9f0bc52 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

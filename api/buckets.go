@@ -4,6 +4,7 @@ import (
 	"github.com/application-research/edge-ur/core"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -44,8 +45,19 @@ type CreateBucketRequest struct {
 
 func handleGetInProgressBuckets(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
+		pageNum, err := strconv.Atoi(c.QueryParam("page"))
+		if err != nil || pageNum <= 0 {
+			pageNum = 1
+		}
+
+		pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+		if err != nil || pageSize <= 0 {
+			pageSize = 25
+		}
+
 		var buckets []core.Bucket
-		node.DB.Model(&core.Bucket{}).Where("status in (?,?)", "processing", "open").Find(&buckets)
+		offset := (pageNum - 1) * pageSize
+		node.DB.Model(&core.Bucket{}).Where("status = ?", "processing").Offset(offset).Limit(pageSize).Find(&buckets)
 
 		var bucketsResponse []BucketsResponse
 		for _, bucket := range buckets {
@@ -162,8 +174,20 @@ func handleDeleteBucket(node *core.LightNode) func(c echo.Context) error {
 
 func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
+
+		pageNum, err := strconv.Atoi(c.QueryParam("page"))
+		if err != nil || pageNum <= 0 {
+			pageNum = 1
+		}
+
+		pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+		if err != nil || pageSize <= 0 {
+			pageSize = 25
+		}
+
 		var buckets []core.Bucket
-		node.DB.Model(&core.Bucket{}).Where("status = ?", "ready").Find(&buckets)
+		offset := (pageNum - 1) * pageSize
+		node.DB.Model(&core.Bucket{}).Where("status = ?", "ready").Offset(offset).Limit(pageSize).Find(&buckets)
 
 		var bucketsResponse []BucketsResponse
 		for _, bucket := range buckets {
