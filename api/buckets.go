@@ -24,6 +24,8 @@ type BucketsResponse struct {
 	Contents       []core.Content `json:"contents"`
 }
 
+// ConfigureBucketsRouter The function ConfigureBucketsRouter configures the routing for various bucket-related endpoints in an Echo web
+// framework.
 func ConfigureBucketsRouter(e *echo.Group, node *core.LightNode) {
 	//var DeltaUploadApi = node.Config.Delta.ApiUrl
 	buckets := e.Group("/buckets")
@@ -34,7 +36,6 @@ func ConfigureBucketsRouter(e *echo.Group, node *core.LightNode) {
 	buckets.GET("/get/processing", handleGetInProgressBuckets(node))
 	buckets.POST("/create", handleCreateBucket(node))
 	buckets.DELETE("/:uuid", handleDeleteBucket(node))
-
 }
 
 type CreateBucketRequest struct {
@@ -43,6 +44,7 @@ type CreateBucketRequest struct {
 	SplitSize  int64  `json:"split_size"`  // if its more than 0
 }
 
+// The function `handleGetInProgressBuckets` retrieves a list of in-progress buckets and their associated contents.
 func handleGetInProgressBuckets(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		pageNum, err := strconv.Atoi(c.QueryParam("page"))
@@ -93,6 +95,9 @@ func handleGetInProgressBuckets(node *core.LightNode) func(c echo.Context) error
 		return c.JSON(200, bucketsResponse)
 	}
 }
+
+// The function `handleCreateBucket` handles the creation of a new bucket/tag in a database, with authorization and error
+// handling.
 func handleCreateBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
@@ -152,6 +157,7 @@ func handleCreateBucket(node *core.LightNode) func(c echo.Context) error {
 	}
 }
 
+// The function `handleDeleteBucket` handles the deletion of a bucket if called by the admin API key.
 func handleDeleteBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
@@ -172,6 +178,7 @@ func handleDeleteBucket(node *core.LightNode) func(c echo.Context) error {
 	}
 }
 
+// The function `handleGetOpenBuckets` handles the GET request for retrieving a list of open buckets with pagination.
 func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
