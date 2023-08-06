@@ -30,14 +30,11 @@ type EdgeConfig struct {
 		BucketAggregateSize        int64 `env:"BUCKET_AGGREGATE_SIZE" envDefault:"4544576000"`
 		MaxSizeToSplit             int64 `env:"MAX_SIZE_TO_SPLIT" envDefault:"32000000000"`
 		SplitSize                  int64 `env:"SPLIT_SIZE" envDefault:"5048576000"`
-		DealCheck                  int   `env:"DEAL_CHECK" envDefault:"600"`
-		ReplicationFactor          int   `env:"REPLICATION_FACTOR" envDefault:"0"`
 		CapacityLimitPerKeyInBytes int64 `env:"CAPACITY_LIMIT_PER_KEY_IN_BYTES" envDefault:"0"`
 	}
 
 	ExternalApi struct {
-		AuthSvcUrl  string `env:"AUTH_SVC_API" envDefault:"https://auth.estuary.tech"`
-		DeltaSvcUrl string `env:"DELTA_SVC_API" envDefault:"https://delta.estuary.tech"`
+		AuthSvcUrl string `env:"AUTH_SVC_API" envDefault:"https://auth.estuary.tech"`
 	}
 }
 

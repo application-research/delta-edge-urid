@@ -74,15 +74,15 @@ type UploadResponse struct {
 	ContentUrl   string      `json:"content_url,omitempty"`
 }
 
+// The function `ConfigureUploadRouter` configures the upload routes for a given Echo group and LightNode.
 func ConfigureUploadRouter(e *echo.Group, node *core.LightNode) {
-	var DeltaUploadApi = node.Config.ExternalApi.DeltaSvcUrl
 	content := e.Group("/content")
 	content.POST("/add", handleUploadToCarBucket(node))
 	content.POST("/upload", handleUploadToCarBucket(node))
 	content.POST("/pin", handlePin(node))
 	content.POST("/fetch-cids", handleFetchCids(node))
 	content.POST("/car-cids", handleCidsToCarBucket(node))
-	content.POST("/add-car", handleUploadCarToBucket(node, DeltaUploadApi))
+	content.POST("/add-car", handleUploadCarToBucket(node))
 }
 
 type SignedUrlRequest struct {
@@ -93,6 +93,8 @@ type SignedUrlRequest struct {
 	Signature           string    `json:"signature"`
 }
 
+// The function `handlePin` handles the pinning of a file to IPFS and returns a JSON response with the status, CID, content
+// URL, and message.
 func handlePin(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		file, err := c.FormFile("data")
@@ -120,6 +122,9 @@ func handlePin(node *core.LightNode) func(c echo.Context) error {
 		})
 	}
 }
+
+// The function `handleFetchCids` handles a request to fetch and pin multiple CIDs, returning a JSON response with the
+// status and message for each CID.
 func handleFetchCids(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		cidBodyReq := CidRequest{}
@@ -156,6 +161,9 @@ func handleFetchCids(node *core.LightNode) func(c echo.Context) error {
 		return c.JSON(200, pinCidsResponse)
 	}
 }
+
+// The function `handleCidsToCarBucket` handles the request to upload and pin files to a bucket in IPFS, splitting the
+// files if necessary and applying tag policies.
 func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		authorizationString := c.Request().Header.Get("Authorization")
@@ -330,6 +338,9 @@ func handleCidsToCarBucket(node *core.LightNode) func(c echo.Context) error {
 		})
 	}
 }
+
+// The function `handleUploadToCarBucket` handles the upload of a file to a bucket in a car storage system, including
+// splitting the file if necessary and updating the bucket's size.
 func handleUploadToCarBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		authorizationString := c.Request().Header.Get("Authorization")
@@ -492,7 +503,10 @@ func handleUploadToCarBucket(node *core.LightNode) func(c echo.Context) error {
 		})
 	}
 }
-func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c echo.Context) error {
+
+// The function `handleUploadCarToBucket` handles the upload of a car file to a bucket, splitting the file if necessary and
+// pinning it to the IPFS network.
+func handleUploadCarToBucket(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		authorizationString := c.Request().Header.Get("Authorization")
 		authParts := strings.Split(authorizationString, " ")
@@ -668,6 +682,9 @@ func handleUploadCarToBucket(node *core.LightNode, DeltaUploadApi string) func(c
 
 	}
 }
+
+// The function `validateCapacityLimit` checks if the total size of contents associated with a given API key exceeds a
+// specified capacity limit.
 func validateCapacityLimit(node *core.LightNode, authKey string) error {
 	var totalSize int64
 	err := node.DB.Raw(`SELECT COALESCE(SUM(size), 0) FROM contents where requesting_api_key = ?`, authKey).Scan(&totalSize).Error

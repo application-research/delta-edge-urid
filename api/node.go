@@ -8,11 +8,8 @@ import (
 
 // ConfigureNodeInfoRouter It configures the router to handle requests for node information
 func ConfigureNodeInfoRouter(e *echo.Group, node *core.LightNode) {
-
 	nodeGroup := e.Group("/node")
 	nodeGroup.GET("/info", handleNodeInfo(node))
-	//nodeGroup.GET("/addr", handleNodeAddr(node))
-	//nodeGroup.GET("/peers", handleNodePeers(node))
 }
 
 // handleNodeInfo is the handler for the /node/info endpoint

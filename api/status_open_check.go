@@ -19,6 +19,8 @@ type StatusOpenCheckResponse struct {
 	} `json:"content"`
 }
 
+// ConfigureStatusOpenCheckRouter The function `ConfigureStatusOpenCheckRouter` sets up routes for checking the status of content, buckets, and tags in an
+// Echo web server.
 func ConfigureStatusOpenCheckRouter(e *echo.Group, node *core.LightNode) {
 	e.GET("/status/cid/:cid", func(c echo.Context) error {
 
@@ -138,13 +140,10 @@ func ConfigureStatusOpenCheckRouter(e *echo.Group, node *core.LightNode) {
 				}
 
 			}
-			//job := jobs.CreateNewDispatcher()
-			//job.AddJob(jobs.NewDealItemChecker(node, content))
 
 		}
 		// trigger status check
 		job := jobs.CreateNewDispatcher()
-		//job.AddJob(jobs.NewCarDealItemChecker(node, bucket))
 		job.Start(len(contents) + 1)
 
 		bucket.RequestingApiKey = ""

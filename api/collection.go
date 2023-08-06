@@ -24,6 +24,7 @@ func ConfigureCollectionsRouter(e *echo.Group, node *core.LightNode) {
 
 }
 
+// The function `handleGetCollections` handles the GET request for retrieving collections based on a provided name.
 func handleGetCollections(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
@@ -65,6 +66,9 @@ func handleGetCollections(node *core.LightNode) func(c echo.Context) error {
 		return c.JSON(200, bucketsResponse)
 	}
 }
+
+// The function `handleCreateCollection` handles the creation of a new collection (tag/bucket) by checking authorization,
+// validating the name, and creating a new bucket if the name does not already exist.
 func handleCreateCollection(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
 
@@ -124,9 +128,9 @@ func handleCreateCollection(node *core.LightNode) func(c echo.Context) error {
 	}
 }
 
+// The function handleModifyCollection returns a function that handles modifying a collection.
 func handleModifyCollection(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
-
 		return nil
 	}
 }
