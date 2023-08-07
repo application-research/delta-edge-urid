@@ -41,20 +41,21 @@ func handleGetCollections(node *core.LightNode) func(c echo.Context) error {
 
 		var bucketsResponse []BucketsResponse
 		for _, bucket := range buckets {
-			bucketsResponse = append(bucketsResponse, BucketsResponse{
-				BucketUUID: bucket.Uuid,
-				PieceCid:   bucket.PieceCid,
-				PieceSize:  bucket.PieceSize,
-				PayloadCid: bucket.Cid,
-				DirCid:     bucket.DirCid,
-				//DownloadUrl: "<a href=/gw/" + bucket.Cid + ">" + bucket.PieceCid + "</a>",
-				DownloadUrl:    "/gw/" + bucket.Cid,
-				CollectionName: bucket.Name,
+			response := BucketsResponse{
+				BucketUUID:     bucket.Uuid,
+				PieceCid:       bucket.PieceCid,
+				PayloadCid:     bucket.Cid,
+				DirCid:         bucket.DirCid,
 				Status:         bucket.Status,
+				CollectionName: bucket.Name,
 				Size:           bucket.Size,
 				CreatedAt:      bucket.CreatedAt,
 				UpdatedAt:      bucket.UpdatedAt,
-			})
+			}
+			response.PieceCommitment.PaddedPieceSize = bucket.PieceSize
+			response.PieceCommitment.PieceCid = bucket.PieceCid
+			response.TransferParameters.URL = "/gw/" + bucket.Cid
+			bucketsResponse = append(bucketsResponse, response)
 		}
 
 		if len(bucketsResponse) == 0 {

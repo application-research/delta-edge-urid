@@ -10,12 +10,17 @@ import (
 )
 
 type BucketsResponse struct {
-	BucketUUID     string         `json:"bucket_uuid"`
-	PieceCid       string         `json:"piece_cid"`
-	PayloadCid     string         `json:"payload_cid"`
-	DirCid         string         `json:"dir_cid"`
-	PieceSize      int64          `json:"piece_size"`
-	DownloadUrl    string         `json:"download_url"`
+	BucketUUID      string `json:"bucket_uuid"`
+	PieceCommitment struct {
+		PieceCid        string `json:"piece_cid"`
+		PaddedPieceSize int64  `json:"padded_piece_size"`
+	} `json:"piece_commitment"`
+	PieceCid           string `json:"piece_cid"`
+	PayloadCid         string `json:"payload_cid"`
+	DirCid             string `json:"dir_cid"`
+	TransferParameters struct {
+		URL string `json:"url"`
+	} `json:"transfer_parameters"`
 	CollectionName string         `json:"collection_name"`
 	Status         string         `json:"status"`
 	Size           int64          `json:"size"`
@@ -63,19 +68,21 @@ func handleGetInProgressBuckets(node *core.LightNode) func(c echo.Context) error
 
 		var bucketsResponse []BucketsResponse
 		for _, bucket := range buckets {
-			bucketsResponse = append(bucketsResponse, BucketsResponse{
+			response := BucketsResponse{
 				BucketUUID:     bucket.Uuid,
 				PieceCid:       bucket.PieceCid,
-				PieceSize:      bucket.PieceSize,
 				PayloadCid:     bucket.Cid,
 				DirCid:         bucket.DirCid,
-				DownloadUrl:    "/gw/" + bucket.Cid,
 				Status:         bucket.Status,
 				CollectionName: bucket.Name,
 				Size:           bucket.Size,
 				CreatedAt:      bucket.CreatedAt,
 				UpdatedAt:      bucket.UpdatedAt,
-			})
+			}
+			response.PieceCommitment.PaddedPieceSize = bucket.PieceSize
+			response.PieceCommitment.PieceCid = bucket.PieceCid
+			response.TransferParameters.URL = "/gw/" + bucket.Cid
+			bucketsResponse = append(bucketsResponse, response)
 
 			// get all the content
 			var contents []core.Content
@@ -198,20 +205,21 @@ func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 
 		var bucketsResponse []BucketsResponse
 		for _, bucket := range buckets {
-			bucketsResponse = append(bucketsResponse, BucketsResponse{
-				BucketUUID: bucket.Uuid,
-				PieceCid:   bucket.PieceCid,
-				PieceSize:  bucket.PieceSize,
-				PayloadCid: bucket.Cid,
-				DirCid:     bucket.DirCid,
-				//DownloadUrl: "<a href=/gw/" + bucket.Cid + ">" + bucket.PieceCid + "</a>",
-				DownloadUrl:    "/gw/" + bucket.Cid,
+			response := BucketsResponse{
+				BucketUUID:     bucket.Uuid,
+				PieceCid:       bucket.PieceCid,
+				PayloadCid:     bucket.Cid,
+				DirCid:         bucket.DirCid,
 				Status:         bucket.Status,
 				CollectionName: bucket.Name,
 				Size:           bucket.Size,
 				CreatedAt:      bucket.CreatedAt,
 				UpdatedAt:      bucket.UpdatedAt,
-			})
+			}
+			response.PieceCommitment.PaddedPieceSize = bucket.PieceSize
+			response.PieceCommitment.PieceCid = bucket.PieceCid
+			response.TransferParameters.URL = "/gw/" + bucket.Cid
+			bucketsResponse = append(bucketsResponse, response)
 
 		}
 
