@@ -117,7 +117,7 @@ func handlePin(node *core.LightNode) func(c echo.Context) error {
 		return c.JSON(200, UploadResponse{
 			Status:     "success",
 			Cid:        cid,
-			ContentUrl: "/gw/" + cid,
+			ContentUrl: node.Config.Node.GwHost + "/gw/" + cid,
 			Message:    "File pinned successfully",
 		})
 	}

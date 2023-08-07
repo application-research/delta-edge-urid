@@ -81,7 +81,7 @@ func handleGetInProgressBuckets(node *core.LightNode) func(c echo.Context) error
 			}
 			response.PieceCommitment.PaddedPieceSize = bucket.PieceSize
 			response.PieceCommitment.PieceCid = bucket.PieceCid
-			response.TransferParameters.URL = "/gw/" + bucket.Cid
+			response.TransferParameters.URL = node.Config.Node.GwHost + "/gw/" + bucket.Cid
 			bucketsResponse = append(bucketsResponse, response)
 
 			// get all the content
@@ -218,7 +218,7 @@ func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 			}
 			response.PieceCommitment.PaddedPieceSize = bucket.PieceSize
 			response.PieceCommitment.PieceCid = bucket.PieceCid
-			response.TransferParameters.URL = "/gw/" + bucket.Cid
+			response.TransferParameters.URL = node.Config.Node.GwHost + "/gw/" + bucket.Cid
 			bucketsResponse = append(bucketsResponse, response)
 
 		}
