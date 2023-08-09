@@ -54,7 +54,7 @@ func handleGetCollections(node *core.LightNode) func(c echo.Context) error {
 			}
 			response.PieceCommitment.PaddedPieceSize = bucket.PieceSize
 			response.PieceCommitment.PieceCid = bucket.PieceCid
-			response.TransferParameters.URL = node.Config.Node.GwHost + "/gw/" + bucket.Cid
+			response.TransferParameters.URL = node.Api.Scheme + node.Config.Node.GwHost + "/gw/" + bucket.Cid
 			bucketsResponse = append(bucketsResponse, response)
 		}
 
