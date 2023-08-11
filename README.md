@@ -29,7 +29,7 @@ curl --location --request POST 'http://localhost:1313/api/v1/content/add' \
 
 ### Get open buckets
 ```
-curl --location 'http://localhost:1313/buckets/get/open' \
+curl --location 'http://localhost:1313/buckets/get/ready' \
 --header 'Authorization: Bearer [ANY VALID DELTA API KEY]'
 [
     {
