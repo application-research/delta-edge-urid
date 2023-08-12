@@ -11,6 +11,7 @@ import (
 
 type BucketsResponse struct {
 	BucketUUID      string `json:"bucket_uuid"`
+	Miner           string `json:"miner,omitempty"`
 	PieceCommitment struct {
 		PieceCid        string `json:"piece_cid"`
 		PaddedPieceSize int64  `json:"padded_piece_size"`
@@ -188,6 +189,7 @@ func handleDeleteBucket(node *core.LightNode) func(c echo.Context) error {
 // The function `handleGetOpenBuckets` handles the GET request for retrieving a list of open buckets with pagination.
 func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 	return func(c echo.Context) error {
+		assignMiner := c.QueryParam("miner")
 
 		pageNum, err := strconv.Atoi(c.QueryParam("page"))
 		if err != nil || pageNum <= 0 {
@@ -215,6 +217,12 @@ func handleGetOpenBuckets(node *core.LightNode) func(c echo.Context) error {
 				Size:           bucket.Size,
 				CreatedAt:      bucket.CreatedAt,
 				UpdatedAt:      bucket.UpdatedAt,
+				Miner: func() string {
+					if assignMiner != "" {
+						return assignMiner
+					}
+					return ""
+				}(),
 			}
 			response.PieceCommitment.PaddedPieceSize = bucket.PieceSize
 			response.PieceCommitment.PieceCid = bucket.PieceCid
